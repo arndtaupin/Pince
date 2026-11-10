@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1b4332">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<title>N-Tester Pro</title>
+<style>
+:root{--primary:#1b4332;--accent:#2d6a4f;--bg:#f1f5f2;--card:#fff;--text:#212529;--border:#dde5df;--ok:#2b8a3e;--mid:#e67700;--bad:#c92a2a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text)}
+[hidden]{display:none!important}
+#app{display:flex;flex-direction:column;height:100%}
+header{background:var(--primary);color:#fff;padding:8px 12px;display:flex;align-items:center;gap:6px;flex-shrink:0}
+header b{flex:1;font-size:16px;letter-spacing:.5px;text-transform:uppercase}
+.chip{font-size:12px;padding:5px 9px;border-radius:12px;background:rgba(255,255,255,.18);white-space:nowrap}
+.chip.good{background:#2b8a3e}.chip.warn{background:#e67700}.chip.err{background:#c92a2a}
+main{flex:1;overflow-y:auto;padding:10px}
+nav{display:flex;background:#fff;border-top:1px solid var(--border);flex-shrink:0;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;padding:13px 4px;border:0;background:none;font-size:14px;font-weight:600;color:#6c757d}
+nav button.on{color:var(--primary);box-shadow:inset 0 3px 0 var(--primary)}
+#stepper{display:flex;gap:4px;margin-bottom:10px}
+#stepper button{flex:1;padding:8px 2px;border:1px solid var(--border);background:#fff;border-radius:10px;font-size:12px;font-weight:600;color:#6c757d;line-height:1.2}
+#stepper button b{display:block;font-size:15px}
+#stepper button.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+#stepper button.done{color:var(--ok);border-color:var(--ok)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px}
+.title{font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;margin:0 0 8px}
+label{display:block;font-size:12px;color:#6c757d;margin:0 0 3px}
+input,select{width:100%;padding:12px;font-size:17px;border:1px solid #ced4da;border-radius:8px;background:#fff;color:var(--text)}
+.row{display:flex;gap:8px;align-items:flex-end}
+.row>*{flex:1}
+.row>.fix{flex:0 0 auto}
+.stepper{display:flex;align-items:center;gap:6px}
+.stepper button{width:44px;height:46px;font-size:22px;border:1px solid #ced4da;border-radius:8px;background:#f1f3f5}
+.stepper span{min-width:30px;text-align:center;font-size:22px;font-weight:700}
+.btn{width:100%;padding:15px;font-size:16px;font-weight:600;border:0;border-radius:8px;color:#fff;background:var(--primary)}
+a.btn{display:block;text-align:center;text-decoration:none}
+.btn.sec{background:#495057}.btn.red{background:#c92a2a}.btn.light{background:#e9ecef;color:#212529}
+.btn:disabled{opacity:.5}
+.btn+.btn,.btn+a.btn,a.btn+a.btn,a.btn+.btn{margin-top:8px}
+#valDisp{font-size:34px;font-weight:700;text-align:center;padding:8px;border:1px solid #ced4da;border-radius:8px;min-height:60px;background:#fff;margin-bottom:8px}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}
+.pad button{font-size:26px;font-weight:700;padding:14px 0;background:#f1f3f5;border:1px solid #dee2e6;border-radius:8px}
+.okbtn{background:#2b9348!important;font-size:22px}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;text-align:center}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.stat{background:#e8f5e9;border-radius:8px;padding:8px;font-size:12px;color:#2e7d32}
+.stat div{font-size:20px;font-weight:700;color:#1b5e20}
+.bar{height:8px;background:#e9ecef;border-radius:4px;overflow:hidden;margin:6px 0 10px}
+.bar i{display:block;height:100%;background:var(--accent);width:0}
+.dot{display:inline-block;padding:5px 10px;border-radius:12px;font-weight:700;font-size:13px;color:#fff;background:#adb5bd}
+.dot.ok{background:var(--ok)}.dot.mid{background:var(--mid)}.dot.bad{background:var(--bad)}
+.big{font-size:46px;font-weight:700;text-align:center;min-height:62px;line-height:62px}
+.big.ok{color:var(--ok)}.big.bad{color:var(--bad)}
+.guide{display:flex;align-items:center;gap:12px}
+.guide .dir{width:92px;height:92px;flex:0 0 92px;display:flex;align-items:center;justify-content:center;color:var(--primary)}
+.guide .dir svg{width:84px;height:84px;transition:transform .2s linear}
+.guide .dir.reached{color:var(--ok);font-size:64px}
+.guide .info{flex:1}
+#gDist{font-size:34px;font-weight:700}
+.small{font-size:12px;color:#6c757d}
+.note{background:#fff8e1;border:1px solid #ffe08a;border-radius:8px;padding:8px;font-size:13px;margin:8px 0}
+.note.good{background:#e8f5e9;border-color:#b7e4c7}
+.note.bad{background:#fdecea;border-color:#f5b7b1}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:6px 4px;border-bottom:1px solid var(--border);text-align:left}
+th{color:#6c757d;font-weight:600;font-size:12px}
+pre{background:#101914;color:#b7f0c8;padding:8px;border-radius:8px;font-size:11px;white-space:pre-wrap;word-break:break-all;max-height:260px;overflow:auto;margin:8px 0}
+#login{min-height:100%;display:flex;flex-direction:column;justify-content:center;gap:12px;padding:24px;max-width:420px;margin:0 auto}
+#login h1{margin:0;text-align:center;color:var(--primary);text-transform:uppercase;font-size:22px}
+#toast{position:fixed;left:12px;right:12px;bottom:76px;background:#212529;color:#fff;padding:12px;border-radius:8px;font-size:14px;text-align:center;z-index:9}
+.bigmain{font-size:92px;font-weight:800;text-align:center;line-height:1.05;min-height:100px;letter-spacing:-2px}
+.bigmain.ok{color:var(--ok)}.bigmain.bad{color:var(--bad)}
+.parcline{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;text-align:left;background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:10px;font-size:15px;font-weight:700;color:var(--primary)}
+.parcline small{display:block;font-weight:400;color:#6c757d;font-size:12px}
+.parcline.warn{border-color:#e67700;background:#fff8e1}
+.statline{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;font-size:15px;margin:6px 0}
+#sheet{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:8;display:flex;align-items:flex-end}
+#sheet .in{background:var(--bg);width:100%;max-height:92%;overflow-y:auto;border-radius:16px 16px 0 0;padding:12px}
+.linkbtn{background:none;border:0;color:var(--accent);font-size:13px;text-decoration:underline;padding:6px}
+#app{height:100dvh}
+main{padding:8px}
+.card.tight{padding:8px 10px;margin-bottom:8px}
+details.card summary{font-weight:700;color:var(--accent);text-transform:uppercase;font-size:13px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;min-height:28px}
+details.card summary::-webkit-details-marker{display:none}
+details.card summary::after{content:'▾';font-size:16px}
+details.card[open] summary::after{content:'▴'}
+details.card[open] summary{margin-bottom:8px}
+.bottombar{position:sticky;bottom:-8px;background:var(--bg);padding:6px 0 8px;display:flex;gap:6px;z-index:2;align-items:center}
+.bottombar .btn{padding:12px 4px;font-size:14px;margin:0;flex:1;width:auto}
+.bottombar .btn.main{flex:1.7}
+.toprow{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.statrow{display:flex;justify-content:space-between;align-items:center;font-size:15px;gap:6px}
+.gstrip{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e67700;border-radius:12px;padding:4px 8px;margin-bottom:8px}
+.gstrip .guide{flex:1;gap:8px}
+.gstrip .dir{width:44px;height:44px;flex:0 0 44px}
+.gstrip .dir svg{width:40px;height:40px}
+.gstrip .dir.reached{font-size:34px}
+.gstrip #gDist{font-size:22px}
+.mini{width:40px;height:40px;border:1px solid #ced4da;border-radius:8px;background:#f1f3f5;font-size:16px}
+#guideBtns{display:flex;gap:6px}
+#valDisp{font-size:30px;min-height:46px;padding:4px;margin-bottom:6px}
+.pad{gap:6px;margin-bottom:6px}
+.pad button{padding:8px 0;font-size:22px}
+.okbtn{padding:12px;font-size:18px}
+.bigmain{font-size:72px;min-height:78px}
+#tenWrap{max-height:150px;overflow:auto}
+#tenWrap td{padding:4px}
+.parcline{padding:8px 12px;margin-bottom:8px}
+#mapSheet{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:8;display:flex;align-items:flex-end}
+#mapSheet .in{background:var(--bg);width:100%;max-height:94%;overflow-y:auto;border-radius:16px 16px 0 0;padding:10px}
+</style>
+</head>
+<body>
+
+<div id="login" hidden>
+  <h1>N-Tester Pro</h1>
+  <div class="small" style="text-align:center">Identification (réseau requis la première fois)</div>
+  <input type="email" id="email" placeholder="Adresse email" autocomplete="username">
+  <input type="password" id="code" placeholder="Code d'accès" autocomplete="current-password">
+  <div id="loginMsg" class="small" style="text-align:center;min-height:18px"></div>
+  <button class="btn" id="btnLogin">Se connecter</button>
+</div>
+
+<div id="app" hidden>
+  <header>
+    <b>N-Tester Pro</b>
+    <span class="chip" id="chipPince">Pince ✕</span>
+    <span class="chip" id="chipGps">GPS…</span>
+    <span class="chip" id="chipSync">0 à envoyer</span>
+  </header>
+
+  <main id="main">
+    <!-- ===== PINCE : l'afficheur (écran principal, tient sans défilement) ===== -->
+    <section id="tab-pince">
+      <button class="parcline" id="parcLine"><span><span id="parcMain">--</span><small id="parcSub"></small></span><span style="font-size:20px">⚙</span></button>
+
+      <div class="gstrip" id="guideCard" hidden>
+        <div id="guideBody" class="guide" hidden>
+          <div class="dir" id="gDir"><svg viewBox="0 0 100 100" id="gArrow"><polygon points="50,4 88,92 50,72 12,92" fill="currentColor"/></svg></div>
+          <div class="info"><div class="small" id="gTitle">Point 1 / 1</div><div id="gDist">--</div><div class="small" id="gNote"></div></div>
+        </div>
+        <div id="guideBtns" hidden>
+          <button class="mini" id="gPrev">◄</button>
+          <button class="mini" id="gNext">►</button>
+        </div>
+      </div>
+
+      <div class="card tight" id="dispPane">
+        <div class="toprow">
+          <span class="dot" id="pinceDot">Non connectée</span>
+          <button class="linkbtn" id="btnPince">Connecter la pince</button>
+        </div>
+        <div class="bigmain" id="pinceBig">--</div>
+        <div class="small" id="pinceMsg" style="min-height:30px;text-align:center">Appuyez sur « Connecter la pince » ou saisissez au clavier.</div>
+        <div id="kbPane" hidden>
+          <div id="valDisp"></div>
+          <div class="pad" id="pad"></div>
+          <button class="btn okbtn" id="btnOk">OK — enregistrer la mesure</button>
+        </div>
+      </div>
+
+      <div class="card tight" id="statPane">
+        <div class="statrow"><span><b id="serieCount">0</b> pinc.</span><span>Moy. <b id="sMean">--</b></span><span>Méd. <b id="sMed">--</b></span><span class="dot" id="sDot">--</span></div>
+        <div class="bar" style="margin:6px 0 4px"><i id="lotBar"></i></div>
+        <div class="small" id="sCi">Précision : --</div>
+        <div class="small" id="zoneInfo"></div>
+      </div>
+
+      <div class="card tight" id="tenCard">
+        <p class="title" style="margin-bottom:4px">Dernières mesures</p>
+        <div id="tenWrap"><table><tbody id="tblTen"></tbody></table></div>
+      </div>
+
+      <div class="bottombar">
+        <button class="btn light" id="btnMap">🗺 Carte</button>
+        <button class="btn light" id="btnKb">⌨ Clavier</button>
+        <button class="btn light" id="btnUndo">↶ Annuler</button>
+        <button class="btn main" id="btnFinish">Voir les résultats ▸</button>
+      </div>
+    </section>
+
+    <!-- ===== RÉSULTATS ===== -->
+    <section id="tab-resultats" hidden>
+      <div class="card tight">
+        <p class="title" id="resTitle">Résultats</p>
+        <div id="resTop"></div>
+      </div>
+      <div class="card tight">
+        <p class="title" id="trendTitle" style="margin-bottom:4px">Évolution de l'indice</p>
+        <svg id="trendSvg" viewBox="0 0 360 240" style="width:100%;height:auto;background:#fff;display:block"></svg>
+        <div class="small" id="trendNote" style="margin-top:6px"></div>
+      </div>
+      <details class="card tight"><summary>Statistiques détaillées</summary><div id="resBody"></div></details>
+      <details class="card tight"><summary>Comparaison avec les échantillons précédents</summary><div id="cmpBody"></div></details>
+      <details class="card tight"><summary>Pour interpréter (atFarm, Yara, ARVALIS)</summary>
+        <div class="small" style="margin-bottom:8px">L'interprétation agronomique (dose d'azote) dépend de la culture, du stade et de la variété. Reportez la moyenne ou la médiane de ce jour dans les outils de référence :</div>
+        <a class="btn light" href="https://www.at.farm/" target="_blank" rel="noopener">atFarm (Yara) — conseil azote</a>
+        <a class="btn light" href="https://www.yara.fr/contentassets/24251f9e94ba4989b6b7e2b10c941913/2021-brochure-n-tester-.pdf" target="_blank" rel="noopener">Yara — brochure N-Tester</a>
+        <a class="btn light" href="https://www.arvalis.fr/" target="_blank" rel="noopener">ARVALIS — Institut du végétal</a>
+      </details>
+      <div class="bottombar" style="flex-wrap:wrap">
+        <div class="small" style="flex:1 1 100%;text-align:center">Et maintenant ? Ajouter des pincements à cet échantillon, ou passer à la suite.</div>
+        <button class="btn main" id="btnReport" style="flex:1 1 100%">Envoyer le rapport PDF par courriel</button>
+        <button class="btn light" id="btnResume">◄ Ajouter des pincements</button>
+        <button class="btn light" id="btnNextPass">Nouvel échantillon</button>
+        <button class="btn light" id="btnNewParc">Autre parcelle</button>
+        <button class="linkbtn" id="btnPdfDl" style="flex:1 1 100%">Télécharger le PDF sur ce téléphone</button>
+      </div>
+    </section>
+
+    <!-- ===== DONNÉES ===== -->
+    <section id="tab-donnees" hidden>
+      <div class="card tight">
+        <p class="title">Synchronisation</p>
+        <div class="grid2">
+          <div class="stat">Mesures sur le téléphone<div id="sumTotal">0</div></div>
+          <div class="stat">À envoyer<div id="sumPend">0</div></div>
+        </div>
+        <button class="btn" id="btnSync" style="margin-top:10px">Synchroniser avec Google Sheets</button>
+        <button class="btn sec" id="btnCsv">Exporter en CSV</button>
+      </div>
+      <details class="card tight" open><summary>Par parcelle et par échantillon</summary>
+        <table><thead><tr><th>Parcelle</th><th>Pass.</th><th>n</th><th>Moy.</th><th>Méd.</th></tr></thead><tbody id="tblGroups"></tbody></table>
+      </details>
+      <details class="card tight"><summary>Toutes les dernières mesures</summary>
+        <table><thead><tr><th>Heure</th><th>Parcelle</th><th>Valeur</th><th>GPS</th><th></th></tr></thead><tbody id="tblLast"></tbody></table>
+      </details>
+    </section>
+
+    <!-- ===== RÉGLAGES (chaque rubrique se déplie) ===== -->
+    <section id="tab-reglages" hidden>
+      <details class="card tight"><summary>Profil de l'opérateur (facultatif)</summary>
+        <label for="pfNom">Nom et prénom</label><input type="text" id="pfNom" autocomplete="name">
+        <label for="pfExpl" style="margin-top:8px">Exploitation</label><input type="text" id="pfExpl" autocomplete="organization">
+        <label for="pfAdr" style="margin-top:8px">Adresse complète</label><textarea id="pfAdr" rows="3" style="width:100%;padding:12px;font-size:16px;border:1px solid #ced4da;border-radius:8px;font-family:inherit"></textarea>
+        <div class="small" style="margin:6px 0">Ces informations figurent dans l'en-tête du rapport PDF. Elles sont rangées avec votre compte et vous suivent d'un téléphone à l'autre.</div>
+        <button class="btn light" id="btnProfile">Enregistrer le profil</button>
+      </details>
+      <details class="card tight"><summary>Périmètres des parcelles</summary>
+        <div class="small" id="polyInfo">Aucun périmètre chargé.</div>
+        <div class="small" style="margin:6px 0">Importez votre fichier <b>DAPLOS (.dap)</b> : il contient les contours <b>et les noms</b> des parcelles, rien à retaper. Importer un nouveau fichier remplace les périmètres actuels ; un nom déjà utilisé par des mesures est conservé. Les fichiers TELEPAC (.shp + .dbf + .prj) et .geojson restent acceptés, mais sans noms.</div>
+        <input type="file" id="polyFile" multiple accept=".dap,.shp,.dbf,.prj,.shx,.geojson,.json">
+        <button class="btn light" id="btnPolyClear" style="margin-top:8px">Effacer les périmètres du téléphone</button>
+      </details>
+      <details class="card tight"><summary>Pince et localisation</summary>
+        <div class="row">
+          <div><label for="cfgMin">Valeur minimale acceptée (refus en dessous)</label><input type="number" id="cfgMin" min="0" inputmode="numeric"></div>
+        </div>
+        <div class="row" style="margin-top:10px"><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="cfgSound" style="width:auto"> Bip à chaque pincement enregistré</label></div>
+        <div class="row" style="margin-top:10px">
+          <div><label for="cfgTol">Tolérance de limite de parcelle (m) : proche de la limite, la parcelle ne change pas</label><input type="number" id="cfgTol" min="0" inputmode="numeric"></div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <div><label for="cfgAcc">Précision GPS indicative (m, couleur de la pastille)</label><input type="number" id="cfgAcc" min="1" inputmode="numeric"></div>
+          <div><label for="cfgRad">Rayon « point atteint » (m)</label><input type="number" id="cfgRad" min="1" inputmode="numeric"></div>
+        </div>
+        <div class="small" style="margin:10px 0 6px" id="pinceBlank"></div>
+        <button class="btn light" id="btnBlankReset">Refaire le pincement à vide</button>
+      </details>
+      <details class="card tight"><summary>Compte</summary>
+        <div class="small" style="margin-bottom:6px">Chaque courriel a son code d'accès, ses réglages, ses périmètres de parcelles et ses résultats : rien n'est partagé entre comptes.</div>
+        <div id="who" style="margin-bottom:8px"></div>
+        <button class="btn red" id="btnLogout">Se déconnecter</button>
+      </details>
+      <details class="card tight"><summary>Avancé (adresse du script, diagnostic Bluetooth)</summary>
+        <label for="cfgUrl">URL du script Google (si différente de celle du fichier)</label>
+        <input type="url" id="cfgUrl" placeholder="https://script.google.com/macros/s/…/exec">
+        <div class="small" style="margin:8px 0">Formule de la pince : N = 576,3 × log10[(IR ÷ rouge) ÷ (IR vide ÷ rouge vide)] − 90. Ajustée sur 24 pincements comparés à atFarm : écart de 1 à 2 % sur la moyenne d'une feuille moyenne ou foncée, moins sûre pour les feuilles très pâles. Les valeurs brutes de chaque pincement sont conservées dans la colonne « Source ».</div>
+        <div class="small"><b>Diagnostic Bluetooth</b> (expérimental) : sert uniquement à repérer comment la pince transmet ses valeurs.</div>
+        <label for="bleSvc" style="margin-top:8px">Services à ouvrir (séparés par des virgules)</label>
+        <input type="text" id="bleSvc" value="0x6E00, 0x6E10, 0x6E20, 0x6E30, 0x6E40, 0x180F, 0x180A" autocapitalize="off" autocomplete="off">
+        <button class="btn sec" id="btnBle" style="margin-top:8px">Chercher la pince N-TESTER</button>
+        <button class="btn light" id="btnBleRead" style="margin-top:8px" hidden>Relire toutes les valeurs maintenant</button>
+        <pre id="bleLog" hidden></pre>
+        <button class="btn light" id="btnBleCopy" hidden>Copier le journal</button>
+      </details>
+      <div class="small" style="text-align:center">N-Tester Pro — version 2.4</div>
+    </section>
+
+    <!-- ===== FEUILLE PARCELLE (option) ===== -->
+    <div id="sheet" hidden><div class="in">
+      <div class="card tight">
+        <div class="guide">
+          <div class="dir" style="width:56px;height:56px;flex:0 0 56px"><svg viewBox="0 0 100 100" id="posArrow" style="width:52px;height:52px"><polygon points="50,4 88,92 50,72 12,92" fill="currentColor"/></svg></div>
+          <div class="info">
+            <div class="small" id="posHdg">Cap --</div>
+            <div id="posXY" style="font-weight:700">--</div>
+            <div class="small" id="posAcc"></div>
+          </div>
+        </div>
+        <div id="detBox" style="margin-top:6px"></div>
+      </div>
+      <div class="card tight">
+        <label for="parcelle">Nom de la parcelle</label>
+        <input type="text" id="parcelle" list="parcelleList" placeholder="ex : P12" autocapitalize="characters" autocomplete="off">
+        <datalist id="parcelleList"></datalist>
+        <div class="small" id="parcInfo" style="margin:6px 0"></div>
+        <div class="row" style="align-items:center">
+          <div><label>Échantillon n° (1 = première visite ; plus haut = nouvelle visite de la même parcelle)</label></div>
+          <div class="fix"><div class="stepper"><button id="pMinus">−</button><span id="passage">1</span><button id="pPlus">+</button></div></div>
+        </div>
+        <label style="margin-top:10px;display:flex;gap:8px;align-items:center;font-size:14px;color:var(--text)"><input type="checkbox" id="lockChk" style="width:22px;height:22px"> Rester sur cette parcelle (ignorer le GPS)</label>
+        <div id="refRow" style="margin-top:10px" hidden><label for="refSel">Guidage vers les points d'un échantillon précédent</label><select id="refSel"></select></div>
+      </div>
+      <button class="btn" id="btnSheetOk">Valider</button>
+    </div></div>
+
+    <!-- ===== CARTE (option) ===== -->
+    <div id="mapSheet" hidden><div class="in">
+      <div class="card tight">
+        <p class="title" style="margin-bottom:6px">Carte de la parcelle</p>
+        <svg id="mapSvg" viewBox="0 0 360 300" style="width:100%;height:auto;background:#eef3ee;border-radius:8px;display:block"></svg>
+        <div class="small" id="mapNote" style="margin-top:6px"></div>
+        <button class="linkbtn" id="mapBg">Fond : photo aérienne (IGN)</button>
+        <div class="small"><span style="color:#1c7ed6">●</span> vous · <span style="color:#2b8a3e">●</span> mesures de cet échantillon · <span style="color:#868e96">○</span> points de l'échantillon précédent · <span style="color:#e67700">◎</span> prochain point à refaire</div>
+      </div>
+      <button class="btn" id="btnMapClose">Fermer la carte</button>
+    </div></div>
+  </main>
+
+
+  <nav>
+    <button id="nav-pince" class="on">Pince</button>
+    <button id="nav-resultats">Résultats</button>
+    <button id="nav-donnees">Données</button>
+    <button id="nav-reglages">Réglages</button>
+  </nav>
+</div>
+
+<div id="toast" hidden></div>
+
+<script>
+/* ============================================================
+   CONFIGURATION — à renseigner une seule fois
+   Collez ici l'URL de déploiement de l'application web Google
+   (Apps Script > Déployer > Application web), qui finit par /exec
+   ============================================================ */
+const API_URL = 'https://script.google.com/macros/s/AKfycbzJglL4HJgMOVBFYpcSoVSzOydKxTs5rCWceh8zNSrITndec2cM6B3_RwurpOJFKce86g/exec';
+
+const SEUIL_OK = 5;             // demi-largeur IC95 <= 5 % de la moyenne -> fiable
+const SEUIL_MOYEN = 10;         // <= 10 % -> moyen, au-delà -> faible
+const T95 = [null,12.706,4.303,3.182,2.776,2.571,2.447,2.365,2.306,2.262,2.228,2.201,2.179,2.160,2.145,2.131,2.120,2.110,2.101,2.093,2.086,2.080,2.074,2.069,2.064,2.060,2.056,2.052,2.048,2.045,2.042];
+const tCrit = df => df < 1 ? 12.706 : df <= 30 ? T95[df] : df <= 60 ? 2.0 : df <= 120 ? 1.98 : 1.96;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const cmpTs = (a, b) => a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : 0;
+
+let ns = '';                                   // espace de stockage propre à chaque utilisateur (courriel)
+const K = k => (k === 'ntp_session' || !ns) ? k : ns + k;
+function load(k, d) { try { const v = localStorage.getItem(K(k)); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
+function save(k, v) {
+  try { localStorage.setItem(K(k), JSON.stringify(v)); return true; }
+  catch (e) { alert("ATTENTION : le stockage du téléphone est plein ou refusé. Synchronisez puis libérez de la place."); return false; }
+}
+
+/* ---------- état ---------- */
+let session = load('ntp_session', null);
+const CFG0 = { apiUrl: '', accMax: 20, radius: 5, minN: 100, map: false, tol: 25, bg: 'ortho' }, CUR0 = { p: '', n: 1, N: 30, pid: null, step: 1 };
+let data = [], cfg = Object.assign({}, CFG0), cur = Object.assign({}, CUR0);
+let closed = {};                                // séries terminées : { 'année|P12|1': date }
+let pnames = {};                                // nom donné à chaque périmètre : { pid: 'P12' }
+let polys = [];                                 // périmètres : [{ pid, year, bbox, polys }]
+let profile = {};                               // identité facultative : { nom, expl, adr }
+/* charge TOUT ce qui est propre à l'utilisateur connecté ; reprend l'ancien stockage commun s'il lui appartient */
+function loadUser() {
+  const em = String(session.email).toLowerCase();
+  ns = 'u_' + em.replace(/[^a-z0-9]/g, '_') + ':';
+  const raw = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  let legacy = []; try { legacy = JSON.parse(raw('ntp_data') || '[]'); } catch (e) {}
+  const owner = !legacy.length || legacy.some(m => String(m.u || '').toLowerCase() === em);
+  if (owner) {
+    ['ntp_data', 'ntp_cfg', 'ntp_cur', 'ntp_closed', 'ntp_pnames', 'ntp_poly', 'ntp_blank', 'ntp_reports'].forEach(k => {
+      const v = raw(k);
+      if (v != null) { try { if (raw(ns + k) == null) localStorage.setItem(ns + k, v); localStorage.removeItem(k); } catch (e) {} }
+    });
+  }
+  data = load('ntp_data', []); cfg = Object.assign({}, CFG0, load('ntp_cfg', {})); cur = Object.assign({}, CUR0, load('ntp_cur', {}));
+  closed = load('ntp_closed', {}); pnames = load('ntp_pnames', {}); polys = load('ntp_poly', []); blanks = load('ntp_blank', []); profile = load('ntp_profile', {});
+  refN = null; offset = 0; manual = false;
+}
+let valueStr = '';
+let gps = { lat: null, lng: null, acc: null, ts: 0, hdg: null };
+let compass = null;
+let offset = 0, refN = null, syncing = false, wl = null, watchId = null, reachedKey = '', raf = 0;
+
+let tt;
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(tt); tt = setTimeout(() => { t.hidden = true; }, 3800); }
+function fmt(x, d) { return (x == null || isNaN(x)) ? '--' : Number(x).toFixed(d == null ? 1 : d).replace('.', ','); }
+let actx = null;
+function beep(f, ms, n) {                       /* bip court ; n = nombre de bips */
+  if (cfg.sound === false) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+    for (let i = 0; i < (n || 1); i++) {
+      const t = actx.currentTime + i * 0.17, o = actx.createOscillator(), g = actx.createGain();
+      o.type = 'sine'; o.frequency.value = f || 1000;
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.5, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + (ms || 120) / 1000);
+      o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + (ms || 120) / 1000 + 0.02);
+    }
+  } catch (e) {}
+}
+function vib(p) { try { if ('vibrate' in navigator) navigator.vibrate(p); } catch (e) {} }
+function persistCur() { save('ntp_cur', cur); }
+
+/* ---------- réseau ---------- */
+function apiUrl() { return (cfg.apiUrl || API_URL || '').trim(); }
+async function api(body) {
+  const url = apiUrl();
+  if (url.indexOf('http') !== 0) throw new Error("URL du script Google non configurée");
+  const ctl = new AbortController();
+  const to = setTimeout(() => ctl.abort(), 45000);
+  try {
+    const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body), signal: ctl.signal });
+    if (!r.ok) throw new Error('Réponse serveur ' + r.status);
+    return await r.json();
+  } finally { clearTimeout(to); }
+}
+
+/* ---------- statistiques ---------- */
+function stats(vals) {
+  const n = vals.length;
+  if (!n) return null;
+  const mean = vals.reduce((a, b) => a + b, 0) / n;
+  const sorted = vals.slice().sort((a, b) => a - b);
+  const median = n % 2 ? sorted[(n - 1) / 2] : (sorted[n / 2 - 1] + sorted[n / 2]) / 2;
+  if (n < 2) return { n, mean, median };
+  const variance = vals.reduce((a, b) => a + (b - mean) * (b - mean), 0) / (n - 1);
+  const sd = Math.sqrt(variance);
+  const se = sd / Math.sqrt(n);
+  const half = tCrit(n - 1) * se;
+  const halfPct = mean ? half / Math.abs(mean) * 100 : null;
+  const cv = mean ? sd / Math.abs(mean) * 100 : null;
+  let level = 'bad';
+  if (halfPct != null) { if (halfPct <= SEUIL_OK) level = 'ok'; else if (halfPct <= SEUIL_MOYEN) level = 'mid'; }
+  return { n, mean, median, variance, sd, se, cv, lo: mean - half, hi: mean + half, half, halfPct, level };
+}
+/* nombre de pincements nécessaires pour atteindre une précision visée (estimation d'après la dispersion observée) */
+function needN(st, pct) {
+  if (!st || st.n < 3 || !st.mean || !st.sd) return null;
+  for (let k = 2; k <= 2000; k++) if (tCrit(k - 1) * st.sd / Math.sqrt(k) / Math.abs(st.mean) * 100 <= pct) return k;
+  return null;
+}
+/* comparaison de deux séries (test de Welch, seuil 95 %) */
+function welch(a, b) {
+  if (!a || !b || a.n < 2 || b.n < 2) return null;
+  const va = a.variance / a.n, vb = b.variance / b.n, se = Math.sqrt(va + vb);
+  if (!se) return null;
+  const t = (a.mean - b.mean) / se;
+  const df = Math.max(1, Math.floor((va + vb) ** 2 / ((va * va) / (a.n - 1) + (vb * vb) / (b.n - 1))));
+  return { t, df, sig: Math.abs(t) > tCrit(df) };
+}
+
+/* ---------- géométrie ---------- */
+function dist(a, b, c, d) {
+  const R = 6371000, r = Math.PI / 180, dLat = (c - a) * r, dLng = (d - b) * r;
+  const x = Math.sin(dLat / 2) ** 2 + Math.cos(a * r) * Math.cos(c * r) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(x));
+}
+function bear(a, b, c, d) {
+  const r = Math.PI / 180;
+  const y = Math.sin((d - b) * r) * Math.cos(c * r);
+  const x = Math.cos(a * r) * Math.sin(c * r) - Math.sin(a * r) * Math.cos(c * r) * Math.cos((d - b) * r);
+  return (Math.atan2(y, x) / r + 360) % 360;
+}
+const CARD = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
+function cardinal(b) { return CARD[Math.round(b / 45) % 8]; }
+
+/* ---------- périmètres de parcelles ---------- */
+function inRing(x, y, ring) {
+  let ins = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const xi = ring[i][0], yi = ring[i][1], xj = ring[j][0], yj = ring[j][1];
+    if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) ins = !ins;
+  }
+  return ins;
+}
+function inEntry(e, lat, lng) {
+  if (lng < e.bbox[0] || lng > e.bbox[2] || lat < e.bbox[1] || lat > e.bbox[3]) return false;
+  return e.polys.some(pg => inRing(lng, lat, pg[0]) && !pg.slice(1).some(h => inRing(lng, lat, h)));
+}
+function curPoly() {
+  const ap = activePolys();
+  return (cur.p && ap.find(e => pnames[e.pid] === cur.p)) || (cur.pid && ap.find(e => e.pid === cur.pid)) || null;
+}
+/* distance (m) d'un point au périmètre : 0 s'il est dedans ; sert de tolérance aux imprécisions du GPS */
+function distToEntry(e, lat, lng) {
+  if (inEntry(e, lat, lng)) return 0;
+  const kx = Math.cos(lat * Math.PI / 180) * 111320, ky = 111320;
+  let best = 1e12;
+  e.polys.forEach(pg => pg.forEach(r => {
+    for (let i = 0; i < r.length - 1; i++) {
+      const ax = (r[i][0] - lng) * kx, ay = (r[i][1] - lat) * ky, bx = (r[i + 1][0] - lng) * kx, by = (r[i + 1][1] - lat) * ky;
+      const dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy;
+      const t = l2 ? Math.max(0, Math.min(1, -(ax * dx + ay * dy) / l2)) : 0;
+      const d = Math.hypot(ax + t * dx, ay + t * dy);
+      if (d < best) best = d;
+    }
+  }));
+  return best;
+}
+const gpsTol = () => Math.max(cfg.tol || 25, gps.acc || 0);
+function polyById(pid) { return polys.find(e => e.pid === pid) || null; }
+function pidOfName(name) { return Object.keys(pnames).find(k => pnames[k] === name) || null; }
+function polyCount() { return polys.length + ' périmètre(s) chargé(s), ' + polys.filter(e => pnames[e.pid]).length + ' nommé(s).'; }
+/* après une synchronisation : retrouve le nom d'un périmètre d'après les mesures déjà faites dedans */
+function rebuildNames() {
+  if (!polys.length) return;
+  let changed = false;
+  data.forEach(m => {
+    if (m.lat == null) return;
+    const e = detectAt(m.lat, m.lng);
+    if (e && !pnames[e.pid] && m.p) { pnames[e.pid] = m.p; changed = true; }
+  });
+  if (changed) { save('ntp_pnames', pnames); renderPolyInfo(); }
+}
+
+/* ---------- séries ---------- */
+const NOPARC = 'HORS PARCELLE';
+function curP() { return cur.p || NOPARC; }
+function curN() { return cur.n; }
+function defaultPassage(p) {
+  const ps = passagesOf(p);
+  if (!ps.length) return 1;
+  const last = ps[ps.length - 1];
+  return closed[skey(p, last)] ? last + 1 : last;
+}
+function dateFr(ts) { try { return new Date(ts).toLocaleDateString('fr-FR'); } catch (e) { return ''; } }
+
+/* ---------- navigation par étapes ---------- */
+/* étape 2 */
+/* ---------- saisie manuelle ---------- */
+function buildPad() {
+  const keys = ['7', '8', '9', '4', '5', '6', '1', '2', '3', '⌫', '0', ','];
+  $('pad').innerHTML = '';
+  keys.forEach(k => {
+    const b = document.createElement('button');
+    b.textContent = k;
+    b.onclick = () => {
+      if (k === '⌫') valueStr = valueStr.slice(0, -1);
+      else if (k === ',') { if (valueStr && valueStr.indexOf(',') < 0) valueStr += ','; }
+      else if (valueStr.length < 6) valueStr += k;
+      $('valDisp').textContent = valueStr;
+    };
+    $('pad').appendChild(b);
+  });
+}
+
+function validate() {
+  const p = curP(), n = curN();
+  if (!valueStr) return;
+  const v = parseFloat(valueStr.replace(',', '.'));
+  if (!isFinite(v) || v <= 0) { toast('Valeur invalide.'); return; }
+
+  if (recordMeasure(p, n, v, 'manuel', Infinity)) { valueStr = ''; $('valDisp').textContent = ''; }
+}
+
+/* enregistre une mesure (saisie manuelle ou pince) ; maxAge = âge maximal du point GPS retenu (ms) */
+function recordMeasure(p, n, v, src, maxAge) {
+  const now = new Date();
+  const item = {
+    id: p + '_P' + n + '_' + now.getTime() + '_' + Math.random().toString(36).slice(2, 6),
+    ts: now.toISOString(), tl: now.toLocaleString('fr-FR'),
+    p: p, n: n, v: v, lat: null, lng: null, acc: null, z: '',
+    src: src, u: session.email, s: false
+  };
+  if (gps.lat != null && Date.now() - gps.ts <= maxAge) {
+    item.lat = +gps.lat.toFixed(7); item.lng = +gps.lng.toFixed(7); item.acc = Math.round(gps.acc * 10) / 10;
+    if (polys.length) {
+      const cp = curPoly(); const inside = cp ? distToEntry(cp, item.lat, item.lng) <= gpsTol() : !!detectAt(item.lat, item.lng);
+      item.z = inside ? 'in' : 'out';
+    }
+  }
+  data.push(item);
+  if (!save('ntp_data', data)) { data.pop(); return null; }
+  vib(80); beep(1000, 120, 1);
+  renderAll();
+  const zi = $('zoneInfo');
+  if (item.z === 'out') { zi.textContent = '⚠ Dernier pincement HORS du périmètre' + (cur.pid ? ' de ' + p : ' référencé'); vib([80, 60, 80]); toast('Pincement hors du périmètre de la parcelle.'); }
+  else if (item.z === 'in') zi.textContent = '✓ Dernier pincement dans le périmètre';
+  else zi.textContent = item.lat == null ? 'Dernier pincement sans coordonnées GPS' : '';
+  const cnt = seriesOf(p, n).length;
+  if (cnt === REC) { vib([120, 60, 120]); setTimeout(() => beep(1400, 120, 3), 250); toast(REC + ' pincements atteints (recommandé) : vous pouvez voir les résultats ou continuer.'); }
+  return item;
+}
+
+function undoLast() {
+  const mine = data.filter(m => !m.s && m.u === session.email).sort(cmpTs);
+  if (!mine.length) { toast('Rien à annuler (les mesures déjà envoyées se corrigent dans le Google Sheet).'); return; }
+  const m = mine[mine.length - 1];
+  if (!confirm('Supprimer la dernière mesure non envoyée ?\n' + m.p + ' — échantillon ' + m.n + ' — valeur ' + fmt(m.v, 0))) return;
+  data = data.filter(x => x.id !== m.id);
+  save('ntp_data', data);
+  renderAll();
+}
+
+/* ---------- affichage ---------- */
+function renderChips() {
+  const pend = data.filter(m => !m.s).length;
+  const c = $('chipSync');
+  c.textContent = pend ? pend + ' à envoyer' : 'tout envoyé';
+  c.className = 'chip ' + (pend ? 'warn' : 'good');
+  $('sumTotal').textContent = data.length;
+  $('sumPend').textContent = pend;
+}
+
+function updateGpsChip() {
+  const c = $('chipGps');
+  if (gps.lat == null) { c.textContent = 'GPS : attente'; c.className = 'chip warn'; return; }
+  if (Date.now() - gps.ts > 20000) { c.textContent = 'GPS perdu'; c.className = 'chip err'; return; }
+  c.textContent = 'GPS ± ' + Math.round(gps.acc) + ' m';
+  c.className = 'chip ' + (gps.acc <= cfg.accMax ? 'good' : 'warn');
+}
+
+function renderDatalist() {
+  const ps = [...new Set(data.map(m => m.p).concat(Object.values(pnames)))].filter(Boolean).sort();
+  $('parcelleList').innerHTML = ps.map(p => '<option value="' + esc(p) + '">').join('');
+}
+
+function precText(st) {
+  if (!st || st.n < 2) return 'Précision : --';
+  return 'Précision ± ' + fmt(st.halfPct, 1) + ' % (IC 95 %)';
+}
+function updateGuide() {
+  const body = $('guideBody'), btns = $('guideBtns');
+  const ref = (refN && refN !== '0') ? refSeries() : [];
+  if (!ref.length) { body.hidden = true; btns.hidden = true; return; }
+  body.hidden = false; btns.hidden = false;
+  const p = curP(), n = curN();
+  const count = seriesOf(p, n).length;
+  let idx = count + offset;
+  const done = idx >= ref.length;
+  idx = Math.max(0, Math.min(ref.length - 1, idx));
+  const tgt = ref[idx];
+  $('gTitle').textContent = 'Point ' + (idx + 1) + ' / ' + ref.length + (done ? ' (tous les points ont été refaits)' : '');
+  const dir = $('gDir');
+  if (gps.lat == null) {
+    $('gDist').textContent = '--'; $('gNote').textContent = 'En attente du GPS…';
+    dir.className = 'dir';
+    return;
+  }
+  const d = dist(gps.lat, gps.lng, tgt.lat, tgt.lng);
+  const b = bear(gps.lat, gps.lng, tgt.lat, tgt.lng);
+  $('gDist').textContent = d < 1000 ? (d < 10 ? d.toFixed(1).replace('.', ',') : Math.round(d)) + ' m' : (d / 1000).toFixed(2).replace('.', ',') + ' km';
+  const hd = compass != null ? compass : gps.hdg;
+  const key = p + '|' + n + '|' + idx;
+  if (d <= cfg.radius) {
+    dir.className = 'dir reached'; dir.innerHTML = '✓';
+    $('gNote').textContent = 'Point atteint — pincez';
+    if (reachedKey !== key) { reachedKey = key; vib([60, 40, 60]); }
+  } else {
+    if (!dir.querySelector('svg')) dir.innerHTML = '<svg viewBox="0 0 100 100" id="gArrow"><polygon points="50,4 88,92 50,72 12,92" fill="currentColor"/></svg>';
+    dir.className = 'dir';
+    dir.querySelector('svg').style.transform = 'rotate(' + (b - (hd == null ? 0 : hd)) + 'deg)';
+    $('gNote').textContent = 'Cap ' + Math.round(b) + '° (' + cardinal(b) + ')' + (hd == null ? ' — pas de boussole : flèche orientée vers le nord' : '');
+    if (reachedKey === key) reachedKey = '';
+  }
+}
+
+/* étape 4 : résultats et comparaison */
+function renderResults() {
+  const p = curP(), n = curN();
+  const s = seriesOf(p, n), st = stats(s.map(m => m.v));
+  renderTrend();
+  $('resTitle').textContent = 'Résultats — ' + (p || '?') + ', échantillon ' + n;
+  if (!st) { $('resBody').innerHTML = '<div class="note bad">Aucune mesure pour cet échantillon.</div>'; $('cmpBody').innerHTML = ''; $('resTop').innerHTML = ''; return; }
+  let h = '<div class="grid3"><div class="stat">Pincements<div>' + st.n + '</div></div><div class="stat">Moyenne<div>' + fmt(st.mean, 1) + '</div></div><div class="stat">Médiane<div>' + fmt(st.median, 1) + '</div></div></div>';
+  if (st.n >= 2) {
+    h += '<div class="grid3" style="margin-top:8px"><div class="stat">Écart-type<div>' + fmt(st.sd, 1) + '</div></div><div class="stat">Variance<div>' + fmt(st.variance, 1) + '</div></div><div class="stat">CV (%)<div>' + fmt(st.cv, 1) + '</div></div></div>';
+    const lab = { ok: 'Fiable', mid: 'Moyen', bad: 'Faible' }[st.level];
+    h += '<div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;gap:8px"><div>Précision de la moyenne : <b>± ' + fmt(st.halfPct, 1) + ' %</b><div class="small">IC 95 % : ' + fmt(st.lo, 1) + ' à ' + fmt(st.hi, 1) + '</div></div><span class="dot ' + st.level + '">' + lab + '</span></div>';
+    h += precTable(st);
+  } else h += '<div class="note">Une seule mesure : pas encore de statistiques de dispersion.</div>';
+  const inside = s.filter(m => m.z === 'in').length, outside = s.filter(m => m.z === 'out').length;
+  if (inside + outside) h += '<div class="small" style="margin-top:8px">Position : ' + inside + ' pincement(s) dans le périmètre' + (outside ? ', <b>' + outside + ' hors périmètre</b>' : '') + '.</div>';
+  const lab = { ok: 'Fiable', mid: 'Moyen', bad: 'Faible' }[st.level];
+  $('resTop').innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><div><div class="small">Moyenne</div><div style="font-size:44px;font-weight:800;line-height:1">' + fmt(st.mean, 1) + '</div></div><div style="text-align:right"><div class="small">Médiane ' + fmt(st.median, 1) + ' · ' + st.n + ' pinc.</div>' + (st.n >= 2 ? '<div><b>± ' + fmt(st.halfPct, 1) + ' %</b> <span class="dot ' + st.level + '">' + lab + '</span></div>' : '') + '</div></div>' + (st.n < REC ? '<div class="note">Moins de ' + REC + ' pincements : résultat provisoire. « Ajouter des pincements » permet d\'en ajouter.</div>' : '');
+  $('resBody').innerHTML = h;
+
+  const others = otherSeries(p).filter(o => o.s.length);
+  if (!others.length) { $('cmpBody').innerHTML = '<div class="small">Aucun autre échantillon enregistré sur cette parcelle : la comparaison apparaîtra dès le prochain.</div>'; return; }
+  let t = '<table><thead><tr><th>Pass.</th><th>Date</th><th>n</th><th>Moy.</th><th>Écart</th></tr></thead><tbody>';
+  others.forEach(o => {
+    const sk = o.s, sst = stats(sk.map(m => m.v));
+    const dpct = sst && sst.mean ? (st.mean - sst.mean) / Math.abs(sst.mean) * 100 : null;
+    const w = welch(st, sst);
+    const verdict = !w ? 'n trop faible' : (w.sig ? (st.mean > sst.mean ? '↑ hausse significative' : '↓ baisse significative') : 'stable (non significatif)');
+    t += '<tr><td>' + o.n + '</td><td>' + dateFr(sk[sk.length - 1].ts) + '</td><td>' + sk.length + '</td><td>' + fmt(sst.mean, 1) + '</td><td>' + (dpct == null ? '--' : (dpct > 0 ? '+' : '') + fmt(dpct, 1) + ' %') + '<div class="small">' + verdict + '</div></td></tr>';
+  });
+  $('cmpBody').innerHTML = t + '</tbody></table><div class="small" style="margin-top:6px">Écart = échantillon de ce jour par rapport à l\'échantillon indiqué (autres échantillons). Test de Welch au seuil de 95 %, utile surtout avec 10 pincements ou plus par échantillon.</div>';
+}
+
+/* précision (± % de la moyenne, IC 95 %) selon la taille de l'échantillon, à dispersion constante */
+function precTable(st) {
+  if (!st || st.n < 3 || !st.mean) return '';
+  const ns = [5, 10, 20, 30, 50].filter(k => k !== st.n);
+  ns.push(st.n); ns.sort((a, b) => a - b);
+  let t = '<table style="margin-top:8px"><thead><tr><th>Pincements</th><th>Précision (± % de la moyenne)</th></tr></thead><tbody>';
+  ns.forEach(k => {
+    const pc = tCrit(k - 1) * st.sd / Math.sqrt(k) / Math.abs(st.mean) * 100;
+    t += '<tr' + (k === st.n ? ' style="font-weight:700"' : '') + '><td>' + k + (k === st.n ? ' (cet échantillon)' : '') + '</td><td>± ' + fmt(pc, 1) + ' %</td></tr>';
+  });
+  return t + '</tbody></table><div class="small">Estimation avec la dispersion observée ce jour ; seule la ligne en gras est mesurée.</div>';
+}
+
+/* rapport PDF envoyé par courriel (le PDF est fabriqué par le script Google à partir de ce HTML) */
+async function sendReport(silent) {
+  const full = await buildReport();
+  if (!full) { toast('Aucune mesure à envoyer.'); return; }
+  const r = { subject: full.subject, summary: full.summary, pdf: full.pdf, name: full.name };
+  const q = load('ntp_reports', []);
+  const tryNow = async rep => { const x = await api(Object.assign({ action: 'report', email: session.email, code: session.code }, rep)); if (!x.ok) throw new Error(x.message || 'refusé'); };
+  if (!navigator.onLine) { q.push(r); save('ntp_reports', q); toast('Hors réseau : rapport gardé, il partira dès le retour du réseau.'); return; }
+  try { await tryNow(r); toast('Rapport PDF envoyé à ' + session.email); }
+  catch (e) { q.push(r); save('ntp_reports', q); toast('Envoi impossible (' + e.message + ') : rapport gardé, nouvel essai à la prochaine synchronisation.'); }
+}
+async function flushReports() {
+  const q = load('ntp_reports', []);
+  if (!q.length || !navigator.onLine || !session) return;
+  const rest = [];
+  for (const r of q) { try { const x = await api(Object.assign({ action: 'report', email: session.email, code: session.code }, r)); if (!x.ok) rest.push(r); } catch (e) { rest.push(r); } }
+  save('ntp_reports', rest);
+  if (rest.length < q.length) toast((q.length - rest.length) + ' rapport(s) envoyé(s) par courriel.');
+}
+
+function renderData() {
+  const groups = {};
+  data.forEach(m => { const k = m.p + '\u0001' + m.n; (groups[k] = groups[k] || []).push(m); });
+  const keys = Object.keys(groups).sort((a, b) => {
+    const A = a.split('\u0001'), B = b.split('\u0001');
+    return A[0].localeCompare(B[0]) || (Number(A[1]) - Number(B[1]));
+  });
+  $('tblGroups').innerHTML = keys.map(k => {
+    const g = groups[k], A = k.split('\u0001');
+    const st = stats(g.map(m => m.v));
+    return '<tr><td>' + esc(A[0]) + '</td><td>' + esc(A[1]) + '</td><td>' + g.length + '</td><td>' + fmt(st.mean, 1) + '</td><td>' + fmt(st.median, 1) + '</td></tr>';
+  }).join('') || '<tr><td colspan="5" class="small">Aucune mesure.</td></tr>';
+  const last = data.slice().sort(cmpTs).slice(-12).reverse();
+  $('tblLast').innerHTML = last.map(m => {
+    const h = new Date(m.ts).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    return '<tr><td>' + h + '</td><td>' + esc(m.p) + ' / ' + m.n + '</td><td>' + fmt(m.v, 1) + '</td><td>' + (m.lat != null ? (m.z === 'out' ? '⚠' : '✓') : '—') + '</td><td>' + (m.s ? '☁' : '⏳') + '</td></tr>';
+  }).join('') || '<tr><td colspan="5" class="small">—</td></tr>';
+}
+
+/* ---------- GPS & boussole ---------- */
+function startGps() {
+  if (!('geolocation' in navigator)) { $('chipGps').textContent = 'GPS indisponible'; $('chipGps').className = 'chip err'; return; }
+  if (watchId != null) return;
+  watchId = navigator.geolocation.watchPosition(p => {
+    gps.lat = p.coords.latitude; gps.lng = p.coords.longitude; gps.acc = p.coords.accuracy; gps.ts = p.timestamp || Date.now();
+    gps.hdg = (p.coords.heading != null && !isNaN(p.coords.heading) && (p.coords.speed || 0) > 0.6) ? p.coords.heading : null;
+    updateGpsChip(); autoParcel(); updateGuide(); renderMap();
+    if (!$('sheet').hidden) renderPos();
+  }, e => {
+    $('chipGps').textContent = e.code === 1 ? 'GPS refusé' : 'GPS ✕';
+    $('chipGps').className = 'chip err';
+  }, { enableHighAccuracy: true, maximumAge: 1000, timeout: 30000 });
+}
+function stopGps() { if (watchId != null) { navigator.geolocation.clearWatch(watchId); watchId = null; } }
+setInterval(() => { if (session) updateGpsChip(); }, 5000);
+
+function startCompass() {
+  window.addEventListener('deviceorientationabsolute', e => {
+    if (e.alpha == null) return;
+    compass = (360 - e.alpha + 360) % 360;
+    if (!raf) raf = requestAnimationFrame(() => { raf = 0; updateGuide(); renderMap(); if (!$('sheet').hidden) renderPos(); });
+  }, true);
+}
+
+async function keepAwake() {
+  try { if ('wakeLock' in navigator) wl = await navigator.wakeLock.request('screen'); } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && session) keepAwake(); });
+
+/* ---------- synchronisation ---------- */
+async function sync(silent) {
+  if (syncing || !session) return;
+  if (!navigator.onLine) { if (!silent) toast('Pas de réseau — les mesures restent sur le téléphone.'); return; }
+  syncing = true;
+  $('btnSync').disabled = true;
+  try {
+    const pend = data.filter(m => !m.s);
+    for (let i = 0; i < pend.length; i += 300) {
+      const part = pend.slice(i, i + 300);
+      const r = await api({ action: 'sync', email: session.email, code: session.code, rows: part.map(m => ({ id: m.id, ts: m.ts, tl: m.tl, p: m.p, n: m.n, v: m.v, lat: m.lat, lng: m.lng, acc: m.acc, src: m.src })) });
+      if (!r.ok) throw new Error(r.message || 'refusé par le serveur');
+      const acc = new Set(r.accepted || []);
+      data.forEach(m => { if (acc.has(m.id)) m.s = true; });
+      save('ntp_data', data);
+    }
+    const r2 = await api({ action: 'pull', email: session.email, code: session.code });
+    let added = 0;
+    if (r2.ok && Array.isArray(r2.rows)) {
+      const known = new Set(data.map(m => m.id));
+      r2.rows.forEach(x => {
+        if (!x.id || known.has(x.id)) return;
+        data.push({ id: x.id, ts: x.ts, tl: x.tl, p: String(x.p).toUpperCase(), n: Number(x.n) || 1, v: Number(x.v), lat: x.lat, lng: x.lng, acc: x.acc, z: '', src: x.src || 'manuel', u: x.u, s: true });
+        added++;
+      });
+      save('ntp_data', data);
+      if (added) rebuildNames();
+    }
+    flushReports(); if (profile.dirty) pushProfile(true);
+    const left = data.filter(m => !m.s).length;
+    if (!silent || left === 0) toast(left ? left + ' mesure(s) non envoyée(s).' : 'Synchronisé' + (added ? ' — ' + added + ' point(s) reçus' : '') + '.');
+  } catch (e) {
+    if (!silent) toast('Échec de la synchronisation : ' + e.message);
+  } finally {
+    syncing = false;
+    $('btnSync').disabled = false;
+    renderAll();
+  }
+}
+
+function exportCsv() {
+  if (!data.length) { toast('Aucune donnée.'); return; }
+  const q = s => '"' + String(s == null ? '' : s).replace(/"/g, '""') + '"';
+  const num = x => x == null ? '' : String(x).replace('.', ',');
+  const head = ['ID', 'Date / Heure', 'Parcelle', 'Échantillon', 'Utilisateur', 'Valeur', 'Latitude', 'Longitude', 'Précision GPS (m)', 'Source', 'Envoyé'];
+  const lines = [head.map(q).join(';')].concat(data.slice().sort(cmpTs).map(m =>
+    [q(m.id), q(m.tl), q(m.p), m.n, q(m.u), num(m.v), num(m.lat), num(m.lng), num(m.acc), q(m.src), m.s ? 'oui' : 'non'].join(';')));
+  const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'N-Tester_' + new Date().toISOString().slice(0, 10) + '.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+
+/* ---------- pince N-Tester : lecture automatique par Bluetooth ----------
+   La pince n'envoie pas la valeur finale mais deux intensités brutes (infrarouge 6e11,
+   rouge 6e12) et une température (6e15). La valeur est calculée ici, comme le fait atFarm.
+   Formule ajustée sur 24 pincements comparés à atFarm (écart 1 à 2 % sur la moyenne d'une feuille). */
+const FORM_A = 576.3, FORM_B = -90.0, FORM_V = 'f1';
+const BLANK_MIN_RED = 5000;     // un pincement à vide donne un rouge > 9000 ; une feuille < 2600
+const BLANK_KEEP = 8;           // nombre de pincements à vide gardés pour la référence
+const u16 = x => '0000' + x + '-0000-1000-8000-00805f9b34fb';
+let blanks = [];
+const pince = { dev: null, c: {}, timer: null, busy: false, last: '', closing: false, retrying: false, batt: null };
+
+function blankRef() {
+  if (!blanks.length) return null;
+  const n = blanks.length;
+  return { n: n, ir: blanks.reduce((a, b) => a + b.ir, 0) / n, red: blanks.reduce((a, b) => a + b.red, 0) / n };
+}
+function nValue(ir, red, ref) { return FORM_A * Math.log10((ir / red) / (ref.ir / ref.red)) + FORM_B; }
+
+function setPinceDot(txt, cls) {
+  const d = $('pinceDot'); d.textContent = txt; d.className = 'dot ' + (cls || '');
+  const c = $('chipPince');
+  c.textContent = cls === 'ok' ? 'Pince ✓' : (cls === 'mid' ? 'Pince…' : 'Pince ✕');
+  c.className = 'chip ' + (cls === 'ok' ? 'good' : (cls === 'mid' ? 'warn' : (cls === 'bad' ? 'err' : '')));
+  if (cls === 'ok' || !cls) kbForce = null;
+  applyKb();
+}
+function pinceMsg(txt, cls, big) {
+  $('pinceMsg').textContent = (big != null && big !== '--' && kbShown() ? big + ' — ' : '') + txt;
+  if (big != null) { $('pinceBig').textContent = big; $('pinceBig').className = 'big ' + (cls || ''); }
+}
+function renderBlank() {
+  const r = blankRef();
+  $('pinceBlank').textContent = r ? 'Vide : ' + r.n + ' pinc. (IR ' + Math.round(r.ir) + ' / rouge ' + Math.round(r.red) + ')' : 'Vide : à faire';
+}
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+async function pinceRead() {
+  const f = async k => (await pince.c[k].readValue()).getFloat32(0, true);
+  const ir = await f('6e11'), red = await f('6e12'), t = await f('6e15');
+  return { ir: ir, red: red, t: t, key: ir + '|' + red };
+}
+
+async function pinceOpen() {
+  setPinceDot('Connexion…', 'mid');
+  const server = await pince.dev.gatt.connect();
+  const svc = await server.getPrimaryService(u16('6e10'));
+  const c = {};
+  for (const k of ['6e11', '6e12', '6e15', '6e16']) c[k] = await svc.getCharacteristic(u16(k));
+  pince.c = c;
+  pince.batt = null;
+  try {
+    const bs = await server.getPrimaryService(u16('180f'));
+    pince.batt = (await (await bs.getCharacteristic(u16('2a19'))).readValue()).getUint8(0);
+  } catch (e) { /* niveau de pile non lisible : sans importance */ }
+  pince.last = (await pinceRead()).key;          // valeurs déjà présentes : ce ne sont pas des pincements
+  c['6e16'].addEventListener('characteristicvaluechanged', onPinceNotif);
+  await c['6e16'].startNotifications();
+  setPinceDot('Connectée' + (pince.batt != null ? ' · pile ' + pince.batt + ' %' : ''), 'ok');
+  $('btnPince').textContent = 'Déconnecter la pince';
+  pinceMsg(blankRef() ? 'Prête : faites vos pincements.' : 'Prête. Faites d\'abord un pincement à vide : pince fermée, rien dedans.', '', '--');
+  vib(60);
+}
+
+async function pinceConnect() {
+  if (pince.dev && pince.dev.gatt.connected) {          // bouton = déconnecter
+    pince.closing = true;
+    try { pince.dev.gatt.disconnect(); } catch (e) {}
+    setPinceDot('Non connectée', ''); $('btnPince').textContent = 'Connecter la pince';
+    pinceMsg('Pince déconnectée : atFarm peut maintenant s\'y connecter.', '', '--');
+    return;
+  }
+  if (!navigator.bluetooth) { pinceMsg('Bluetooth indisponible : utilisez Chrome sur Android.', 'bad', '--'); return; }
+  try {
+    pince.closing = false;
+    if (!pince.dev) {
+      pince.dev = await navigator.bluetooth.requestDevice({
+        filters: [{ namePrefix: 'N-TESTER' }],
+        optionalServices: ['6e00', '6e10', '6e20', '6e30', '6e40', '180f', '180a'].map(u16)
+      });
+      pince.dev.addEventListener('gattserverdisconnected', onPinceLost);
+    }
+    await pinceOpen();
+  } catch (e) {
+    setPinceDot('Non connectée', 'bad');
+    pinceMsg(e.name === 'NotFoundError' ? 'Aucune pince choisie. Allumez la pince, fermez atFarm et réessayez.'
+      : 'Connexion impossible (' + e.message + '). Fermez atFarm, rallumez la pince et réessayez.', 'bad', '--');
+  }
+}
+
+async function onPinceLost() {
+  $('btnPince').textContent = 'Connecter la pince';
+  if (pince.closing || pince.retrying) return;
+  pince.retrying = true;
+  setPinceDot('Déconnectée', 'bad');
+  pinceMsg('Pince déconnectée — nouvelle tentative…', 'bad');
+  for (let i = 0; i < 6 && !pince.closing; i++) {
+    await wait(2000);
+    try { await pinceOpen(); pince.retrying = false; return; } catch (e) { /* on réessaie */ }
+  }
+  pince.retrying = false;
+  setPinceDot('Déconnectée', 'bad');
+  pinceMsg('Reconnexion impossible. Touchez « Connecter la pince ».', 'bad');
+}
+
+function onPinceNotif() {
+  if (pince.busy || pince.timer) return;                 // une seule lecture par pincement
+  pince.timer = setTimeout(() => { pince.timer = null; handlePinch(); }, 120);
+}
+
+async function handlePinch() {
+  pince.busy = true;
+  try {
+    let r = null;
+    for (let i = 0; i < 5; i++) {                        // les valeurs peuvent arriver quelques dixièmes de s plus tard
+      r = await pinceRead();
+      if (r.key !== pince.last) break;
+      await wait(250);
+    }
+    if (!r || r.key === pince.last) { pinceMsg('Pincement non lu (valeurs inchangées). Recommencez.', 'bad', '--'); vib([200]); beep(220, 300, 1); return; }
+    pince.last = r.key;
+    onPinch(r.ir, r.red, r.t);
+  } catch (e) {
+    pinceMsg('Lecture impossible : ' + e.message, 'bad', '--');
+  } finally { pince.busy = false; }
+}
+
+function onPinch(ir, red, temp) {
+  if (!(ir > 0) || !(red > 0)) { pinceMsg('Pincement non lu. Recommencez.', 'bad', '--'); vib([200]); beep(220, 300, 1); return; }
+  if (red >= BLANK_MIN_RED && ir >= 1000) {              // pince vide : référence
+    blanks.push({ ir: ir, red: red, t: Date.now() });
+    if (blanks.length > BLANK_KEEP) blanks.shift();
+    save('ntp_blank', blanks); renderBlank();
+    pinceMsg('Pincement à vide enregistré (' + blanks.length + ' en mémoire).', '', 'vide');
+    vib(40); return;
+  }
+  const ref = blankRef();
+  if (!ref) { pinceMsg('Faites d\'abord un pincement à vide : pince fermée, rien dedans.', 'bad', '--'); vib([200]); beep(220, 300, 1); return; }
+  const N = nValue(ir, red, ref);
+  const big = fmt(N, 0);
+  if (!isFinite(N) || N < cfg.minN) {
+    pinceMsg('Pincement refusé : feuille trop pâle ou mal placée (valeur ' + big + ', minimum ' + cfg.minN + '). Non enregistré.', 'bad', big);
+    vib([250, 80, 250]); beep(220, 300, 1); return;
+  }
+  const p = curP(), n = curN();
+  if (closed[skey(p, n)]) { pinceMsg('Valeur ' + big + ' NON enregistrée : l\'échantillon est terminé. Rouvrez-le dans Résultats ou changez d\'échantillon.', 'bad', big); vib([200]); beep(220, 300, 1); return; }
+  const src = 'bt ' + FORM_V + ' ir=' + Math.round(ir) + ' rg=' + Math.round(red) + ' v=' + Math.round(ref.ir) + '/' + Math.round(ref.red) + ' t=' + Number(temp).toFixed(2);
+  const it = recordMeasure(p, n, Math.round(N * 10) / 10, src, 30000);
+  if (it) pinceMsg('Enregistré — mesure ' + seriesOf(p, n).length + ' de ' + p + ' (échantillon ' + n + ')' + (it.lat == null ? ' — sans GPS' : ''), 'ok', big);
+}
+
+function pinceDisconnect() {
+  pince.closing = true;
+  try { if (pince.dev && pince.dev.gatt.connected) pince.dev.gatt.disconnect(); } catch (e) {}
+  setPinceDot('Non connectée', ''); $('btnPince').textContent = 'Connecter la pince';
+}
+
+/* ---------- diagnostic Bluetooth ---------- */
+let bleText = '';
+function bleLog(s) { bleText += s + '\n'; $('bleLog').textContent = bleText; $('bleLog').hidden = false; $('btnBleCopy').hidden = false; }
+function toHex(dv) { let h = ''; for (let i = 0; i < dv.byteLength; i++) h += dv.getUint8(i).toString(16).padStart(2, '0'); return '0x' + h; }
+let bleSnap = null;
+function propsOf(c) {
+  return ['read', 'write', 'writeWithoutResponse', 'notify', 'indicate'].filter(k => c.properties[k]).join(',') || '-';
+}
+function decodeDv(dv) {
+  const p = [toHex(dv)];
+  if (dv.byteLength === 1) p.push('u8=' + dv.getUint8(0));
+  if (dv.byteLength === 2) p.push('u16LE=' + dv.getUint16(0, true));
+  if (dv.byteLength === 4) { p.push('u32LE=' + dv.getUint32(0, true)); p.push('f32LE=' + Number(dv.getFloat32(0, true).toPrecision(7))); }
+  return p.join(' ');
+}
+async function bleDiag() {
+  bleText = ''; $('bleLog').textContent = '';
+  if (!navigator.bluetooth) { bleLog('Web Bluetooth indisponible (Chrome Android requis).'); return; }
+  try {
+    const svcs = $('bleSvc').value.split(',').map(x => x.trim().toLowerCase()).filter(Boolean).map(x => {
+      const m = x.match(/^(?:0x)?([0-9a-f]{4})$/);
+      return m ? '0000' + m[1] + '-0000-1000-8000-00805f9b34fb' : x;
+    });
+    bleLog('Recherche d\'un appareil « N-TESTER »…');
+    const dev = await navigator.bluetooth.requestDevice({ filters: [{ namePrefix: 'N-TESTER' }], optionalServices: svcs });
+    bleLog('Appareil : ' + dev.name);
+    const server = await dev.gatt.connect();
+    bleLog('Connecté. Lecture des services autorisés…');
+    const services = await server.getPrimaryServices();
+    if (!services.length) bleLog('Aucun service accessible avec ces identifiants.');
+    const readables = [];
+    let timer = null, busy = false;
+    const snap = async verbose => {
+      if (busy) return;
+      busy = true;
+      try {
+        for (const r of readables) {
+          try {
+            const dv = await r.c.readValue();
+            const h = toHex(dv);
+            if (verbose || h !== r.last) bleLog('  ~ ' + r.c.uuid.slice(4, 8) + ' ' + (r.last === null || verbose ? '' : r.last + ' -> ') + decodeDv(dv));
+            r.last = h;
+          } catch (e) { /* lecture refusée : on passe */ }
+        }
+      } finally { busy = false; }
+    };
+    bleSnap = snap;
+    for (const s of services) {
+      bleLog('SERVICE ' + s.uuid.slice(4, 8));
+      let chars = [];
+      try { chars = await s.getCharacteristics(); } catch (e) { bleLog('  caractéristiques inaccessibles : ' + e.message); }
+      for (const c of chars) {
+        const short = c.uuid.slice(4, 8);
+        bleLog('  CARACT. ' + short + ' [' + propsOf(c) + ']');
+        if (c.properties.read) {
+          try { const dv = await c.readValue(); readables.push({ c: c, last: toHex(dv) }); bleLog('     lecture : ' + decodeDv(dv)); }
+          catch (e) { bleLog('     lecture impossible : ' + e.message); }
+        }
+        if (c.properties.notify || c.properties.indicate) {
+          c.addEventListener('characteristicvaluechanged', ev => {
+            bleLog('  >> ' + new Date().toLocaleTimeString('fr-FR') + ' ' + short + ' ' + decodeDv(ev.target.value));
+            clearTimeout(timer);
+            timer = setTimeout(() => snap(false), 400);
+          });
+          try { await c.startNotifications(); bleLog('     notifications activées'); } catch (e) { bleLog('     notif. impossible : ' + e.message); }
+        }
+      }
+    }
+    bleLog('PRÊT : faites un pincement. Les valeurs qui changent après lui sont signalées par « ~ ».');
+    $('btnBleRead').hidden = false;
+  } catch (e) { bleLog('Erreur : ' + e.name + ' — ' + e.message); }
+}
+
+/* ---------- navigation & démarrage ---------- */
+function leaveApp() {
+  stopGps(); pinceDisconnect();
+  data = []; closed = {}; pnames = {}; polys = []; profile = {}; cur = Object.assign({}, CUR0); ns = '';
+  $('app').hidden = true; $('login').hidden = false;
+  $('code').value = ''; $('loginMsg').textContent = '';
+}
+
+$('btnLogin').onclick = async () => {
+  const email = $('email').value.trim().toLowerCase(), code = $('code').value.trim(), st = $('loginMsg');
+  if (!email || !code) { st.textContent = 'Renseignez votre email et votre code.'; return; }
+  st.textContent = 'Vérification…';
+  try {
+    const r = await api({ action: 'login', email, code });
+    if (r.ok) { session = { email: r.email, code, nom: r.nom }; save('ntp_session', session); loadUser(); mergeProfile(r); enterApp(); }
+    else st.textContent = r.message || 'Accès refusé.';
+  } catch (e) {
+    st.textContent = navigator.onLine ? 'Erreur : ' + e.message : 'Réseau requis pour la première connexion.';
+  }
+};
+
+$('btnLogout').onclick = () => {
+  const pend = data.filter(m => !m.s).length;
+  if (!confirm('Se déconnecter ?' + (pend ? '\n' + pend + ' mesure(s) non envoyée(s) restent sur le téléphone.' : ''))) return;
+  session = null; try { localStorage.removeItem('ntp_session'); } catch (e) {}
+  leaveApp();
+};
+
+$('gPrev').onclick = () => {
+  const ref = refSeries(), count = seriesOf(curP(), curN()).length;
+  offset = Math.max(-count, Math.min(ref.length - 1 - count, offset - 1)); updateGuide();
+};
+$('gNext').onclick = () => {
+  const ref = refSeries(), count = seriesOf(curP(), curN()).length;
+  offset = Math.max(-count, Math.min(ref.length - 1 - count, offset + 1)); updateGuide();
+};
+$('btnOk').onclick = validate;
+$('btnUndo').onclick = undoLast;
+$('btnSync').onclick = () => sync(false);
+$('chipSync').onclick = () => sync(false);
+$('btnCsv').onclick = exportCsv;
+$('btnBle').onclick = bleDiag;
+$('btnBleRead').onclick = () => { if (bleSnap) bleSnap(true); };
+$('btnBleCopy').onclick = () => { try { navigator.clipboard.writeText(bleText); toast('Journal copié.'); } catch (e) { toast('Copie impossible.'); } };
+$('btnPince').onclick = pinceConnect;
+$('btnBlankReset').onclick = () => { if (!confirm('Effacer la référence à vide ?\nIl faudra refaire un pincement à vide.')) return; blanks = []; save('ntp_blank', blanks); renderBlank(); pinceMsg('Référence à vide effacée : faites un pincement à vide.', '', '--'); };
+$('cfgUrl').onchange = e => { cfg.apiUrl = e.target.value.trim(); save('ntp_cfg', cfg); };
+$('btnPolyClear').onclick = () => { if (!confirm('Effacer les périmètres du téléphone ?\n(Les noms déjà donnés sont conservés.)')) return; setPolys([], true); };
+window.addEventListener('online', () => sync(true));
+
+/* ============ v2.0 : afficheur de pince au centre, le reste en options ============ */
+let manual = false, autoCand = null, autoCount = 0, prompted = {};
+
+function renderTen() {
+  const last = seriesOf(curP(), cur.n).slice(-10).reverse();
+  const total = seriesOf(curP(), cur.n).length;
+  $('tblTen').innerHTML = last.map((m, i) => '<tr><td>' + (total - i) + '</td><td>' + new Date(m.ts).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + '</td><td><b>' + fmt(m.v, 1) + '</b></td><td>' + esc(m.p) + '</td><td>' + (m.lat != null ? (m.z === 'out' ? '⚠' : '✓') : '—') + (String(m.src).indexOf('bt') === 0 ? ' 🔌' : ' ✋') + '</td></tr>').join('') || '<tr><td colspan="5" class="small">Aucune mesure dans cet échantillon.</td></tr>';
+}
+
+function renderAll() {
+  renderChips(); renderDatalist(); rebuildGuide(); renderParcLine(); renderSeries(); renderTen(); updateGuide(); renderData(); renderMap();
+  if (!$('tab-resultats').hidden) renderResults();
+}
+
+/* ----- suivi automatique de la parcelle par GPS ----- */
+function applyDetect(e) {
+  if (!e) { cur.pid = null; cur.p = ''; cur.n = 1; }
+  else if (pnames[e.pid]) { cur.pid = e.pid; cur.p = pnames[e.pid]; cur.n = defaultPassage(cur.p); }
+  else { cur.pid = e.pid; cur.p = ''; cur.n = 1; if (!prompted[e.pid]) { prompted[e.pid] = 1; openSheet(); } }
+  offset = 0; refN = null; persistCur(); renderAll();
+}
+function autoParcel() {
+  if (cur.lock || !polys.length || gps.lat == null || gps.acc > cfg.accMax * 3) return;
+  const cp = curPoly();
+  if (cp && distToEntry(cp, gps.lat, gps.lng) <= gpsTol()) { autoCand = null; autoCount = 0; return; }   // proche de la parcelle courante : on ne change pas
+  const e = detectAt(gps.lat, gps.lng);
+  const key = e ? e.pid : 'out';
+  if (key === (cur.pid || 'out')) { autoCand = null; autoCount = 0; return; }
+  if (autoCand !== key) { autoCand = key; autoCount = 1; return; }
+  if (++autoCount < 3) return;                           // 3 positions successives dans le nouveau périmètre
+  autoCand = null; autoCount = 0;
+  applyDetect(e);
+}
+
+/* ----- feuille « parcelle » ----- */
+function renderPos() {
+  const hd = compass != null ? compass : gps.hdg;
+  $('posArrow').style.transform = 'rotate(' + (hd == null ? 0 : -hd) + 'deg)';
+  $('posHdg').textContent = hd == null ? 'Cap : boussole indisponible (flèche = nord)' : 'Cap ' + Math.round(hd) + '° (' + cardinal(hd) + ') — la flèche montre le nord';
+  if (gps.lat == null) { $('posXY').textContent = '--'; $('posAcc').textContent = 'En attente du GPS…'; }
+  else { $('posXY').textContent = gps.lat.toFixed(5) + ', ' + gps.lng.toFixed(5); $('posAcc').textContent = 'Précision ± ' + Math.round(gps.acc) + ' m' + (gps.acc > cfg.accMax ? ' — insuffisante (max ' + cfg.accMax + ' m)' : ''); }
+  const box = $('detBox');
+  if (!polys.length) { box.innerHTML = '<div class="note">Aucun périmètre chargé : saisissez le nom de la parcelle.</div>'; return; }
+  if (gps.lat == null) { box.innerHTML = '<div class="small">Détection de la parcelle : en attente du GPS…</div>'; return; }
+  const e = detectAt(gps.lat, gps.lng);
+  if (!e) { box.innerHTML = '<div class="note">Vous êtes <b>hors des parcelles référencées</b>.</div>'; return; }
+  const nm = pnames[e.pid];
+  const pr = e.props || {}, hint = pr.ilot ? ' <span class="small">(îlot ' + esc(pr.ilot) + ' · parc. ' + esc(pr.parc) + ' · ' + esc(pr.cult) + ' · ' + esc(pr.ha) + ' ha)</span>' : '';
+  box.innerHTML = nm ? '<div class="note good">Vous êtes dans la parcelle <b>' + esc(nm) + '</b>' + hint + '.</div>'
+    : '<div class="note">Périmètre référencé <b>sans nom</b>' + hint + ' : saisissez son nom ci-dessous, il sera mémorisé.</div>';
+}
+function closeSheet() { $('sheet').hidden = true; }
+function nameChanged() {
+  const nm = $('parcelle').value.trim().toUpperCase();
+  const e = gps.lat != null ? detectAt(gps.lat, gps.lng) : null;
+  $('lockChk').checked = !!nm && !(e && pnames[e.pid] === nm) && !(e && !pnames[e.pid]);
+  if (nm) $('passage').textContent = defaultPassage(nm);
+  renderParcInfo();
+}
+/* ----- résultats : terminer / rouvrir / nouveau passage ----- */
+function showTab(t) {
+  ['pince', 'resultats', 'donnees', 'reglages'].forEach(x => { $('tab-' + x).hidden = x !== t; $('nav-' + x).className = x === t ? 'on' : ''; });
+  if (t === 'pince') renderMap();
+  if (t === 'resultats') { renderResults(); updateResButtons(); }
+  if (t === 'donnees') renderData();
+  if (t === 'reglages') { renderPolyInfo(); renderBlank(); }
+  $('main').scrollTop = 0;
+}
+function fillCfg() { fillProfile(); $('cfgTol').value = cfg.tol; $('cfgAcc').value = cfg.accMax; $('cfgRad').value = cfg.radius; $('cfgMin').value = cfg.minN; $('cfgUrl').value = cfg.apiUrl || ''; $('cfgSound').checked = cfg.sound !== false; }
+function enterApp() {
+  loadUser();
+  $('login').hidden = true; $('app').hidden = false;
+  $('who').textContent = 'Connecté : ' + (session.nom || session.email) + ' (' + session.email + ')';
+  fillCfg(); startGps(); startCompass(); keepAwake();
+  renderBlank(); renderPolyInfo(); fetchParcelles();
+  showTab('pince'); renderAll(); applyKb(); updateGpsChip();
+  if (navigator.onLine) sync(true);
+}
+
+$('parcLine').onclick = openSheet;
+$('btnSheetOk').onclick = applySheet;
+$('sheet').addEventListener('click', e => { if (e.target === $('sheet')) closeSheet(); });
+$('parcelle').addEventListener('input', nameChanged);
+$('pMinus').onclick = () => { $('passage').textContent = Math.max(1, (Number($('passage').textContent) || 1) - 1); };
+$('pPlus').onclick = () => { $('passage').textContent = (Number($('passage').textContent) || 1) + 1; };
+$('btnFinish').onclick = finishSeries;
+$('btnReport').onclick = () => sendReport();
+$('btnPdfDl').onclick = downloadPdf;
+$('btnNextPass').onclick = () => {
+  const p = curP(), mx = Math.max(cur.n, passagesOf(p).slice(-1)[0] || 0);
+  if (seriesOf(p, cur.n).length && !closed[skey(p, cur.n)]) { closed[skey(p, cur.n)] = new Date().toISOString(); save('ntp_closed', closed); }
+  cur.n = mx + 1; cur.lock = true; offset = 0; refN = null; persistCur(); renderAll(); showTab('pince'); toast('Nouvel échantillon ' + cur.n + ' sur ' + p + '.');
+};
+$('chipPince').onclick = () => showTab('pince');
+['pince', 'resultats', 'donnees', 'reglages'].forEach(t => { $('nav-' + t).onclick = () => showTab(t); });
+$('cfgSound').addEventListener('change', () => { cfg.sound = $('cfgSound').checked; save('ntp_cfg', cfg); if (cfg.sound) beep(1000, 120, 1); });
+['cfgTol', 'cfgAcc', 'cfgRad', 'cfgMin'].forEach(id => $(id).addEventListener('change', () => {
+  cfg.tol = Math.max(0, Number($('cfgTol').value) || 0);
+  cfg.accMax = Math.max(1, Number($('cfgAcc').value) || 20); cfg.radius = Math.max(1, Number($('cfgRad').value) || 5); cfg.minN = Math.max(0, Number($('cfgMin').value) || 0);
+  save('ntp_cfg', cfg); updateGpsChip();
+}));
+
+/* ============ périmètres multi-années, import .shp (Lambert 93) ============ */
+const YEAR = () => new Date().getFullYear();
+const yr = m => new Date(m.ts).getFullYear();
+function yearFromName(st) { const m = String(st).match(/(20\d\d)/); return m ? Number(m[1]) : null; }
+
+const L93 = (() => {
+  const a = 6378137, e = Math.sqrt(0.00669438002290), rad = Math.PI / 180;
+  const m = p => Math.cos(p) / Math.sqrt(1 - e * e * Math.sin(p) ** 2);
+  const t = p => Math.tan(Math.PI / 4 - p / 2) / Math.pow((1 - e * Math.sin(p)) / (1 + e * Math.sin(p)), e / 2);
+  const p1 = 44 * rad, p2 = 49 * rad, p0 = 46.5 * rad, l0 = 3 * rad;
+  const n = (Math.log(m(p1)) - Math.log(m(p2))) / (Math.log(t(p1)) - Math.log(t(p2)));
+  const F = m(p1) / (n * Math.pow(t(p1), n)), r0 = a * F * Math.pow(t(p0), n);
+  return (x, y) => {
+    const dx = x - 700000, dy = r0 - (y - 6600000), r = Math.sign(n) * Math.hypot(dx, dy);
+    const tt = Math.pow(r / (a * F), 1 / n), th = Math.atan2(dx, dy);
+    let p = Math.PI / 2 - 2 * Math.atan(tt);
+    for (let i = 0; i < 10; i++) p = Math.PI / 2 - 2 * Math.atan(tt * Math.pow((1 - e * Math.sin(p)) / (1 + e * Math.sin(p)), e / 2));
+    return [(th / n + l0) / rad, p / rad];
+  };
+})();
+
+function readDbf(buf) {
+  const dv = new DataView(buf), u8 = new Uint8Array(buf);
+  const n = dv.getUint32(4, true), hl = dv.getUint16(8, true), rl = dv.getUint16(10, true);
+  const f = []; let o = 32;
+  while (o < hl - 1 && u8[o] !== 0x0d) { let name = ''; for (let i = 0; i < 11 && u8[o + i]; i++) name += String.fromCharCode(u8[o + i]); f.push({ n: name.toUpperCase(), l: u8[o + 16] }); o += 32; }
+  const td = new TextDecoder('windows-1252'), out = [];
+  for (let r = 0; r < n; r++) {
+    let p = hl + r * rl + 1; const rec = {};
+    f.forEach(x => { rec[x.n] = td.decode(u8.subarray(p, p + x.l)).trim(); p += x.l; });
+    out.push(rec);
+  }
+  return out;
+}
+
+/* ---- Lambert II étendu (EPSG:27572, NTF) → WGS84 : coordonnées des fichiers DAPLOS ---- */
+const L2E = (() => {
+  const a = 6378249.2, rad = Math.PI / 180;
+  const f = 1 / 293.4660212936269, e2 = f * (2 - f), ee = Math.sqrt(e2);
+  const p0 = 46.8 * rad, k0 = 0.99987742, l0 = 0, x0 = 600000, y0 = 2200000, lParis = 2.33722917 * rad;
+  const m = p => Math.cos(p) / Math.sqrt(1 - e2 * Math.sin(p) ** 2);
+  const t = p => Math.tan(Math.PI / 4 - p / 2) / Math.pow((1 - ee * Math.sin(p)) / (1 + ee * Math.sin(p)), ee / 2);
+  const n = Math.sin(p0), F = m(p0) / (n * Math.pow(t(p0), n)), r0 = a * k0 * F * Math.pow(t(p0), n);
+  return (x, y) => {
+    const dx = x - x0, dy = r0 - (y - y0), r = Math.sign(n) * Math.hypot(dx, dy);
+    const tt = Math.pow(r / (a * k0 * F), 1 / n), th = Math.atan2(dx, dy);
+    let p = Math.PI / 2 - 2 * Math.atan(tt);
+    for (let i = 0; i < 10; i++) p = Math.PI / 2 - 2 * Math.atan(tt * Math.pow((1 - ee * Math.sin(p)) / (1 + ee * Math.sin(p)), ee / 2));
+    const lam = th / n + l0 + lParis;
+    /* NTF → WGS84 : translation (-168, -60, +320) m */
+    const N = a / Math.sqrt(1 - e2 * Math.sin(p) ** 2);
+    const X = N * Math.cos(p) * Math.cos(lam) - 168, Y = N * Math.cos(p) * Math.sin(lam) - 60, Z = N * (1 - e2) * Math.sin(p) + 320;
+    const aw = 6378137, fw = 1 / 298.257223563, e2w = fw * (2 - fw), rho = Math.hypot(X, Y);
+    let ph = Math.atan2(Z, rho * (1 - e2w));
+    for (let i = 0; i < 8; i++) { const Nw = aw / Math.sqrt(1 - e2w * Math.sin(ph) ** 2); ph = Math.atan2(Z + e2w * Nw * Math.sin(ph), rho); }
+    return [Math.atan2(Y, X) / rad, ph / rad];
+  };
+})();
+
+/* ---- fichier DAPLOS (.dap) : noms des parcelles + contours ---- */
+async function readDap(file) {
+  const txt = (await file.text()).replace(/\r/g, ''), lines = txt.split('\n');
+  const names = {}, rings = {}; let year = null;
+  lines.forEach(l => {
+    const k = l.slice(0, 2);
+    if (k === 'DP') {
+      const id = l.slice(2, 8), y = l.slice(8, 12);
+      if (!year && /^20\d\d$/.test(y)) year = Number(y);
+      let nm = l.slice(105, 140).replace(/�(?=re\b)/g, 'è').replace(/�/g, 'é').replace(/\s+/g, ' ').trim();
+      if (nm) names[id] = nm.toUpperCase();
+    } else if (k === 'SC') {
+      const m = l.match(/^SC(.{6})\s+20\d\d\d\s+(\d+\.?\d*?)(2\d{6}\.?\d*)\s*$/);
+      if (m) (rings[m[1]] = rings[m[1]] || []).push(L2E(parseFloat(m[2]), parseFloat(m[3])));
+    }
+  });
+  const out = [], seen = {};
+  Object.keys(names).forEach(id => {
+    const r = rings[id]; if (!r || r.length < 4) return;
+    let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+    const ring = r.map(c => { if (c[0] < x0) x0 = c[0]; if (c[0] > x1) x1 = c[0]; if (c[1] < y0) y0 = c[1]; if (c[1] > y1) y1 = c[1]; return [+c[0].toFixed(6), +c[1].toFixed(6)]; });
+    const yr = year || YEAR();
+    const pid = 'g' + yr + '_' + Math.round((y0 + y1) / 2 * 1e5) + '_' + Math.round((x0 + x1) / 2 * 1e5);
+    if (seen[pid]) return;                                   // même contour répété (une ligne par culture)
+    seen[pid] = 1;
+    out.push({ year: yr, props: {}, pid: pid, name: names[id], bbox: [x0, y0, x1, y1], polys: [[ring]] });
+  });
+  return out;
+}
+/* nomme les contours d'après le fichier ; un nom déjà utilisé par des mesures n'est pas écrasé */
+function applyDapNames(list) {
+  let set = 0, kept = 0;
+  list.forEach(e => {
+    if (!e.name) return;
+    const cur0 = pnames[e.pid];
+    if (!cur0 || cur0 === e.name) { pnames[e.pid] = e.name; set++; return; }
+    if (data.some(m => m.p === cur0)) { kept++; return; }
+    pnames[e.pid] = e.name; set++;
+  });
+  save('ntp_pnames', pnames);
+  return { set: set, kept: kept };
+}
+
+const ringArea = r => { let s = 0; for (let i = 0; i < r.length - 1; i++) s += r[i][0] * r[i + 1][1] - r[i + 1][0] * r[i][1]; return s / 2; };
+
+async function readShapefile(shpF, dbfF, prjF, stem) {
+  const buf = await shpF.arrayBuffer(), dv = new DataView(buf);
+  if (buf.byteLength < 100 || dv.getInt32(0, false) !== 9994) throw new Error('fichier .shp invalide');
+  const prj = prjF ? await prjF.text() : '';
+  const recs = dbfF ? readDbf(await dbfF.arrayBuffer()) : [];
+  const shapes = []; let off = 100, idx = 0;
+  while (off + 8 <= buf.byteLength) {
+    const len = dv.getInt32(off + 4, false) * 2, c = off + 8; off = c + len;
+    const type = dv.getInt32(c, true);
+    if (type !== 5 && type !== 15 && type !== 25) { idx++; continue; }   // 5 = polygone ; 0 = vide
+    const nParts = dv.getInt32(c + 36, true), nPts = dv.getInt32(c + 40, true);
+    const pStart = c + 44, ptStart = pStart + 4 * nParts, parts = [];
+    for (let i = 0; i < nParts; i++) parts.push(dv.getInt32(pStart + 4 * i, true));
+    parts.push(nPts);
+    const rings = [];
+    for (let i = 0; i < nParts; i++) { const ring = []; for (let j = parts[i]; j < parts[i + 1]; j++) ring.push([dv.getFloat64(ptStart + 16 * j, true), dv.getFloat64(ptStart + 16 * j + 8, true)]); rings.push(ring); }
+    shapes.push({ rings, rec: recs[idx] || {} }); idx++;
+  }
+  if (!shapes.length) throw new Error('aucun polygone dans le .shp');
+  const p0 = shapes[0].rings[0][0], projected = Math.abs(p0[0]) > 180 || Math.abs(p0[1]) > 90;
+  if (projected) {
+    if (prj && !/lambert|2154|rgf93/i.test(prj)) throw new Error('projection non prise en charge (Lambert 93 attendue)');
+    if (!(p0[0] > 0 && p0[0] < 1.3e6 && p0[1] > 6e6 && p0[1] < 7.3e6)) throw new Error('coordonnées hors Lambert 93 (France métropolitaine)');
+  }
+  const ry = shapes[0].rec.CAMPAGNE;
+  let year = Number(ry) > 2000 ? Number(ry) : yearFromName(stem);
+  if (!year) year = YEAR();
+  const feats = shapes.map(sh => {
+    const polysOut = [];
+    sh.rings.forEach(r => {
+      const g = projected ? r.map(q => L93(q[0], q[1])) : r;
+      if (ringArea(r) < 0 || !polysOut.length) polysOut.push([g]); else polysOut[polysOut.length - 1].push(g);
+    });
+    const d = sh.rec;
+    return { type: 'Feature', properties: { annee: year, ilot: d.NUMERO_I, parc: d.NUMERO_P, ha: d.SURF, cult: d.TYPE }, geometry: polysOut.length > 1 ? { type: 'MultiPolygon', coordinates: polysOut } : { type: 'Polygon', coordinates: polysOut[0] } };
+  });
+  return parseGeo({ type: 'FeatureCollection', features: feats }, year);
+}
+
+function parseGeo(gj, defYear) {
+  const feats = gj.type === 'FeatureCollection' ? gj.features : (gj.type === 'Feature' ? [gj] : []);
+  const out = [];
+  feats.forEach(f => {
+    const g = f && f.geometry;
+    if (!g) return;
+    const pr = f.properties || {};
+    const year = Number(pr.annee || pr.CAMPAGNE || pr.campagne || defYear) || YEAR();
+    let pl;
+    if (g.type === 'Polygon') pl = [g.coordinates]; else if (g.type === 'MultiPolygon') pl = g.coordinates; else return;
+    let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+    pl = pl.map(pg => pg.map(r => r.map(c => {
+      const x = +c[0], y = +c[1];
+      if (Math.abs(x) > 180 || Math.abs(y) > 90) throw new Error('coordonnées non converties en degrés (WGS84)');
+      if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+      return [+x.toFixed(6), +y.toFixed(6)];
+    })));
+    out.push({ year: year, props: { ilot: pr.ilot, parc: pr.parc, ha: pr.ha, cult: pr.cult }, pid: 'g' + year + '_' + Math.round((y0 + y1) / 2 * 1e5) + '_' + Math.round((x0 + x1) / 2 * 1e5), bbox: [x0, y0, x1, y1], polys: pl });
+  });
+  return out;
+}
+
+function detectAt(lat, lng) { for (const e of activePolys()) if (inEntry(e, lat, lng)) return e; return null; }
+
+function samplePoint(e) {
+  const r = e.polys[0][0]; let cx = 0, cy = 0;
+  r.forEach(q => { cx += q[0]; cy += q[1]; }); cx /= r.length; cy /= r.length;
+  if (inEntry(e, cy, cx)) return [cx, cy];
+  for (let i = 0; i < r.length; i += Math.max(1, Math.floor(r.length / 12))) {
+    const x = r[i][0] + (cx - r[i][0]) * 0.3, y = r[i][1] + (cy - r[i][1]) * 0.3;
+    if (inEntry(e, y, x)) return [x, y];
+  }
+  return [(e.bbox[0] + e.bbox[2]) / 2, (e.bbox[1] + e.bbox[3]) / 2];
+}
+/* une parcelle déjà nommée une année donne son nom au périmètre qui la recouvre l'année suivante */
+/* ajoute une couche annuelle ; si l'année existe déjà elle est remplacée, les autres années restent */
+function setPolys(list, persist) {
+  polys = list;
+  if (persist) { try { localStorage.setItem(K('ntp_poly'), JSON.stringify(polys)); } catch (e) {} }
+  renderPolyInfo();
+}
+async function fetchParcelles() {
+  try {
+    const r = await fetch('parcelles.geojson', { cache: 'no-cache' });
+    if (!r.ok) return;
+    const list = parseGeo(await r.json(), null);
+    if (list.length) { mergeLayers(list); if (!$('sheet').hidden) renderPos(); }
+  } catch (e) { /* hors réseau ou fichier absent : on garde ceux du téléphone */ }
+}
+
+/* ============ années : chaque année est une nouvelle page ============ */
+/* toutes les autres séries de la parcelle (autres passages, autres années), de la plus ancienne à la plus récente */
+$('polyFile').onchange = async e => {
+  const files = [...e.target.files];
+  if (!files.length) return;
+  try {
+    const by = {};
+    files.forEach(f => { const m = f.name.match(/^(.*)\.([^.]+)$/); if (!m) return; (by[m[1]] = by[m[1]] || {})[m[2].toLowerCase()] = f; });
+    let total = 0, matched = 0, unnamed = 0; const years = [];
+    for (const st of Object.keys(by)) {
+      const g = by[st]; let list = [];
+      if (g.shp) list = await readShapefile(g.shp, g.dbf, g.prj, st);
+      else if (g.dap) list = await readDap(g.dap);
+      else if (g.geojson || g.json) list = parseGeo(JSON.parse(await (g.geojson || g.json).text()), yearFromName(st));
+      if (!list.length) continue;
+      const rep = mergeLayers(list); if (g.dap) { const r2 = applyDapNames(list); renderPolyInfo(); rep.matched = r2.set; rep.unnamed = list.length - r2.set - r2.kept; if (r2.kept) toast(r2.kept + ' nom(s) conservé(s) car déjà utilisés par des mesures.'); } total += list.length; matched += rep.matched; unnamed += rep.unnamed; years.push(list[0].year);
+    }
+    if (!total) throw new Error('aucun fichier .dap, .shp ou .geojson exploitable (sélectionnez ensemble .shp, .dbf et .prj)');
+    toast(total + ' périmètres chargés' + (matched ? ' ; ' + matched + ' déjà nommés' : '') + (unnamed ? ' ; ' + unnamed + ' à nommer sur le terrain' : '') + '.');
+    rebuildNames();
+  } catch (err) { toast('Fichier refusé : ' + err.message); }
+  e.target.value = '';
+};
+$('refSel').onchange = e => { refN = e.target.value; offset = 0; updateGuide(); };
+
+/* ----- carte (option) : périmètre, position, points mesurés, points de référence ----- */
+
+/* ----- profil de l'opérateur ----- */
+function mergeProfile(r) {
+  const p = Object.assign({}, profile);
+  if (r && r.nom && !p.nom) p.nom = r.nom;
+  if (r && r.expl && !p.expl) p.expl = r.expl;
+  if (r && r.adr && !p.adr) p.adr = r.adr;
+  profile = p; save('ntp_profile', profile);
+}
+function fillProfile() { $('pfNom').value = profile.nom || ''; $('pfExpl').value = profile.expl || ''; $('pfAdr').value = profile.adr || ''; }
+async function pushProfile(silent) {
+  try {
+    const r = await api({ action: 'profile', email: session.email, code: session.code, nom: profile.nom || '', expl: profile.expl || '', adr: profile.adr || '' });
+    if (!r.ok) throw new Error(r.message || 'refusé');
+    profile.dirty = false; save('ntp_profile', profile);
+    if (!silent) toast('Profil enregistré.');
+  } catch (e) { if (!silent) toast('Profil gardé sur le téléphone ; envoi au prochain essai (' + e.message + ').'); }
+}
+$('btnProfile').onclick = () => {
+  profile = { nom: $('pfNom').value.trim(), expl: $('pfExpl').value.trim(), adr: $('pfAdr').value.trim(), dirty: true };
+  save('ntp_profile', profile);
+  if (profile.nom) { session.nom = profile.nom; save('ntp_session', session); $('who').textContent = 'Connecté : ' + profile.nom + ' (' + session.email + ')'; }
+  if (navigator.onLine) pushProfile(false); else toast('Profil gardé ; il sera envoyé au retour du réseau.');
+};
+
+/* ============ séries : parcelle + passage (sans notion d'année) ============ */
+const skey = (p, n) => p + '|' + n;
+function seriesOf(p, n) { return data.filter(m => m.p === p && m.n === n).sort(cmpTs); }
+function passagesOf(p) { return [...new Set(data.filter(m => m.p === p).map(m => m.n))].sort((a, b) => a - b); }
+/* tous les autres passages de la parcelle, du plus ancien au plus récent */
+function otherSeries(p) {
+  return passagesOf(p).filter(n => n !== cur.n).map(n => ({ n: n, s: seriesOf(p, n) }));
+}
+function refSeries() { return data.filter(m => m.p === curP() && m.n === Number(refN) && m.lat != null).sort(cmpTs); }
+function rebuildGuide() {
+  const p = curP();
+  const refs = otherSeries(p).filter(o => o.n < cur.n && o.s.some(m => m.lat != null));
+  const keys = refs.map(o => String(o.n));
+  if (refN !== '0' && !keys.includes(refN)) refN = keys.length ? keys[keys.length - 1] : '0';
+  const sel = $('refSel');
+  sel.innerHTML = '<option value="0">Aucun guidage</option>' + refs.map(o => '<option value="' + o.n + '">Échantillon ' + o.n + ' (' + o.s.filter(m => m.lat != null).length + ' points, ' + dateFr(o.s[o.s.length - 1].ts) + ')</option>').join('');
+  sel.value = String(refN);
+  $('refRow').hidden = refs.length === 0;
+  $('guideCard').hidden = refs.length === 0 || refN === '0';
+}
+function renderParcInfo() {
+  const p = $('parcelle').value.trim().toUpperCase();
+  const ps = p ? passagesOf(p) : [];
+  $('parcInfo').innerHTML = !p ? 'Saisissez ou choisissez un nom.'
+    : (ps.length ? 'Échantillons déjà mesurés : ' + ps.map(k => {
+        const s = seriesOf(p, k);
+        return k + ' (' + s.length + ' pinc., ' + dateFr(s[s.length - 1].ts) + (closed[skey(p, k)] ? ', terminé' : '') + ')';
+      }).join(' ; ') : 'Nouvelle parcelle : aucun échantillon enregistré.');
+}
+
+/* ============ périmètres : un seul fichier à la fois ============ */
+function activePolys() { return polys; }
+function inheritNames(list, others) {
+  let matched = 0, unnamed = 0;
+  list.forEach(e => {
+    if (pnames[e.pid]) { matched++; return; }
+    const pt = samplePoint(e);
+    const hit = others.find(o => pnames[o.pid] && inEntry(o, pt[1], pt[0]));
+    if (hit) { pnames[e.pid] = pnames[hit.pid]; matched++; } else unnamed++;
+  });
+  save('ntp_pnames', pnames);
+  return { matched, unnamed };
+}
+/* un nouveau fichier remplace les périmètres actuels ; les noms déjà donnés sont repris d'après leur position */
+function mergeLayers(list) {
+  const rep = inheritNames(list, polys);
+  polys = list;
+  try { localStorage.setItem(K('ntp_poly'), JSON.stringify(polys)); } catch (e) { toast('Périmètres trop volumineux pour être gardés hors réseau.'); }
+  renderPolyInfo();
+  return rep;
+}
+function renderPolyInfo() {
+  $('polyInfo').textContent = polys.length ? polys.length + ' périmètres chargés, ' + polys.filter(e => pnames[e.pid]).length + ' nommés.' : 'Aucun périmètre chargé.';
+}
+
+/* ----- courbe : évolution de l'indice d'une parcelle, un point par passage (moyenne ± précision à 95 %) ----- */
+function renderTrend() {
+  const p = curP(), svg = $('trendSvg');
+  $('trendTitle').textContent = 'Évolution de l\'indice — ' + p;
+  const pts = passagesOf(p).map(n => {
+    const s = seriesOf(p, n); if (!s.length) return null;
+    const st = stats(s.map(m => m.v));
+    return { n: n, k: s.length, st: st, t: s.reduce((a, m) => a + new Date(m.ts).getTime(), 0) / s.length, cur: n === cur.n };
+  }).filter(Boolean).sort((a, b) => a.t - b.t);
+  if (!pts.length) { svg.innerHTML = ''; $('trendNote').textContent = 'Aucune mesure pour cette parcelle.'; return; }
+  const W = 360, H = 240, L = 42, R = 14, T = 18, B = 34;
+  let lo = 1e9, hi = -1e9;
+  pts.forEach(q => { const a = q.st.lo != null ? q.st.lo : q.st.mean, b = q.st.hi != null ? q.st.hi : q.st.mean; if (a < lo) lo = a; if (b > hi) hi = b; });
+  const pad = Math.max((hi - lo) * 0.15, hi * 0.03, 1); lo -= pad; hi += pad;
+  const step = [1, 2, 5, 10, 20, 25, 50, 100, 200, 500].find(v => (hi - lo) / v <= 5) || 500;
+  const t0 = pts[0].t, t1 = pts[pts.length - 1].t, span = t1 - t0;
+  const X = t => (pts.length === 1 || span < 3600e3) ? (L + (W - L - R) / 2) : L + 14 + (t - t0) / span * (W - L - R - 28);
+  const Y = v => T + (hi - v) / (hi - lo) * (H - T - B);
+  let g = '';
+  for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) g += '<line x1="' + L + '" y1="' + Y(v).toFixed(1) + '" x2="' + (W - R) + '" y2="' + Y(v).toFixed(1) + '" stroke="#e9ecef"/><text x="' + (L - 6) + '" y="' + (Y(v) + 4).toFixed(1) + '" font-size="11" fill="#6c757d" text-anchor="end">' + v + '</text>';
+  g += '<line x1="' + L + '" y1="' + (H - B) + '" x2="' + (W - R) + '" y2="' + (H - B) + '" stroke="#adb5bd"/>';
+  if (pts.length > 1) g += '<polyline fill="none" stroke="#95d5b2" stroke-width="2" stroke-dasharray="5 4" points="' + pts.map(q => X(q.t).toFixed(1) + ',' + Y(q.st.mean).toFixed(1)).join(' ') + '"/>';
+  let lastLabel = -1e9;
+  pts.forEach((q, i) => {
+    const x = X(q.t), col = q.cur ? '#1b4332' : '#2d6a4f';
+    if (q.st.lo != null) g += '<g stroke="' + col + '" stroke-width="2"><line x1="' + x.toFixed(1) + '" y1="' + Y(q.st.hi).toFixed(1) + '" x2="' + x.toFixed(1) + '" y2="' + Y(q.st.lo).toFixed(1) + '"/><line x1="' + (x - 5).toFixed(1) + '" y1="' + Y(q.st.hi).toFixed(1) + '" x2="' + (x + 5).toFixed(1) + '" y2="' + Y(q.st.hi).toFixed(1) + '"/><line x1="' + (x - 5).toFixed(1) + '" y1="' + Y(q.st.lo).toFixed(1) + '" x2="' + (x + 5).toFixed(1) + '" y2="' + Y(q.st.lo).toFixed(1) + '"/></g>';
+    g += '<circle cx="' + x.toFixed(1) + '" cy="' + Y(q.st.mean).toFixed(1) + '" r="' + (q.cur ? 7 : 5) + '" fill="' + col + '" stroke="#fff" stroke-width="2"/>';
+    g += '<text x="' + x.toFixed(1) + '" y="' + (Y(q.st.hi != null ? q.st.hi : q.st.mean) - 8).toFixed(1) + '" font-size="11" font-weight="700" fill="#212529" text-anchor="middle">' + fmt(q.st.mean, 0) + '</text>';
+    const lab = new Date(q.t).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+    if (x - lastLabel > 46 || i === pts.length - 1) { g += '<text x="' + x.toFixed(1) + '" y="' + (H - 18) + '" font-size="11" fill="#495057" text-anchor="middle">' + lab + '</text><text x="' + x.toFixed(1) + '" y="' + (H - 5) + '" font-size="10" fill="#868e96" text-anchor="middle">P' + q.n + '</text>'; lastLabel = x; }
+  });
+  svg.innerHTML = g;
+  $('trendNote').innerHTML = pts.map(q => 'P' + q.n + (q.cur ? ' (en cours)' : '') + ' · ' + new Date(q.t).toLocaleDateString('fr-FR') + ' · <b>' + fmt(q.st.mean, 1) + '</b>' + (q.st.halfPct != null ? ' ± ' + fmt(q.st.halfPct, 1) + ' %' : '') + ' (' + q.k + ' pinc.)').join('<br>')
+    + '<div style="margin-top:4px">Point = moyenne de l\'échantillon ; barre = précision à 95 % de la moyenne. Plus les pincements sont nombreux, plus la barre est courte.</div>';
+}
+
+/* ----- carte : fond de carte (tuiles IGN / OpenStreetMap, réseau nécessaire), périmètre, position, points ----- */
+const TILES = {
+  ortho: { n: 'Photo aérienne (IGN)', at: '© IGN', url: (z, x, y) => 'https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX=' + z + '&TILEROW=' + y + '&TILECOL=' + x + '&FORMAT=image/jpeg' },
+  plan: { n: 'Plan (IGN)', at: '© IGN', url: (z, x, y) => 'https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2&STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX=' + z + '&TILEROW=' + y + '&TILECOL=' + x + '&FORMAT=image/png' },
+  osm: { n: 'OpenStreetMap', at: '© OpenStreetMap', url: (z, x, y) => 'https://tile.openstreetmap.org/' + z + '/' + x + '/' + y + '.png' }
+};
+const lon2x = (lng, z) => (lng + 180) / 360 * Math.pow(2, z);
+const lat2y = (lat, z) => (1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, z);
+const x2lon = (x, z) => x / Math.pow(2, z) * 360 - 180;
+const y2lat = (y, z) => Math.atan(Math.sinh(Math.PI * (1 - 2 * y / Math.pow(2, z)))) * 180 / Math.PI;
+let mapTilesKey = '';
+
+function renderMap() {
+  if ($('mapSheet').hidden) return;
+  const e = curPoly(), svg = $('mapSvg');
+  const mine = seriesOf(curP(), cur.n).filter(m => m.lat != null);
+  const ref = (refN && refN !== '0') ? refSeries() : [];
+  const bg = cfg.bg || 'ortho', T = TILES[bg];
+  const fit = [];                                     // cadre : le périmètre s'il existe (cadre stable), sinon les points
+  if (e) e.polys.forEach(pg => pg[0].forEach(q => fit.push([q[1], q[0]])));
+  else { mine.forEach(m => fit.push([m.lat, m.lng])); ref.forEach(m => fit.push([m.lat, m.lng])); if (gps.lat != null) fit.push([gps.lat, gps.lng]); }
+  if (!fit.length) { svg.innerHTML = ''; mapTilesKey = ''; $('mapNote').textContent = 'Rien à afficher : ni périmètre, ni position GPS.'; return; }
+  let y0 = 1e9, y1 = -1e9, x0 = 1e9, x1 = -1e9;
+  fit.forEach(q => { if (q[0] < y0) y0 = q[0]; if (q[0] > y1) y1 = q[0]; if (q[1] < x0) x0 = q[1]; if (q[1] > x1) x1 = q[1]; });
+  const kx = Math.cos((y0 + y1) / 2 * Math.PI / 180), W = 360, H = 300, M = 16;
+  const wx = Math.max((x1 - x0) * kx, 1e-6), wy = Math.max(y1 - y0, 1e-6);
+  const sc = Math.min((W - 2 * M) / wx, (H - 2 * M) / wy);
+  const ox = (W - wx * sc) / 2, oy = (H - wy * sc) / 2;
+  const fx = v => ox + (v - x0) * kx * sc, fy = v => H - oy - (v - y0) * sc;
+  const X = v => fx(v).toFixed(1), Y = v => fy(v).toFixed(1);
+  if (!svg.querySelector('#mapTiles')) { svg.innerHTML = '<g id="mapTiles"></g><g id="mapFg"></g>'; mapTilesKey = ''; }
+  // --- fond de carte
+  let tiles = '', att = '';
+  if (T && navigator.onLine) {
+    const lng0 = x0 - ox / (kx * sc), lng1 = x0 + (W - ox) / (kx * sc), lat1 = y0 + (H - oy) / sc, lat0 = y0 - oy / sc;
+    const mPerUnit = 111320 / sc;
+    let z = Math.max(10, Math.min(19, Math.round(Math.log2(156543.03 * Math.cos((y0 + y1) / 2 * Math.PI / 180) / mPerUnit) + 0.4)));
+    let ta, tb, tc, td;
+    for (;; z--) { ta = Math.floor(lon2x(lng0, z)); tb = Math.floor(lon2x(lng1, z)); tc = Math.floor(lat2y(lat1, z)); td = Math.floor(lat2y(lat0, z)); if ((tb - ta + 1) * (td - tc + 1) <= 30 || z <= 8) break; }
+    const key = bg + '|' + z + '|' + ta + '|' + tb + '|' + tc + '|' + td + '|' + sc.toFixed(2) + '|' + ox.toFixed(1) + '|' + oy.toFixed(1);
+    if (key !== mapTilesKey) {
+      for (let tx = ta; tx <= tb; tx++) for (let ty = tc; ty <= td; ty++) {
+        const xa = fx(x2lon(tx, z)), xb = fx(x2lon(tx + 1, z)), ya = fy(y2lat(ty, z)), yb = fy(y2lat(ty + 1, z));
+        tiles += '<image href="' + T.url(z, tx, ty) + '" x="' + xa.toFixed(2) + '" y="' + ya.toFixed(2) + '" width="' + (xb - xa + 0.6).toFixed(2) + '" height="' + (yb - ya + 0.6).toFixed(2) + '" preserveAspectRatio="none" onerror="this.style.display=\'none\'"/>';
+      }
+      svg.querySelector('#mapTiles').innerHTML = tiles; mapTilesKey = key;
+    }
+    att = '<rect x="' + (W - 122) + '" y="' + (H - 15) + '" width="122" height="15" fill="#fff" fill-opacity=".75"/><text x="' + (W - 6) + '" y="' + (H - 4) + '" font-size="10" fill="#212529" text-anchor="end">' + T.at + '</text>';
+  } else if (mapTilesKey) { svg.querySelector('#mapTiles').innerHTML = ''; mapTilesKey = ''; }
+  const hasBg = !!(T && navigator.onLine);
+  // --- premier plan
+  let g = '';
+  if (e) {
+    const d = e.polys.map(pg => pg.map(r => 'M' + r.map(q => X(q[0]) + ' ' + Y(q[1])).join('L') + 'Z').join('')).join('');
+    g += hasBg ? '<path d="' + d + '" fill="#ffffff" fill-opacity=".10" stroke="#ffd43b" stroke-width="2.5" fill-rule="evenodd"/>'
+               : '<path d="' + d + '" fill="#b7e4c7" fill-opacity=".55" stroke="#1b4332" stroke-width="2" fill-rule="evenodd"/>';
+  }
+  ref.forEach(m => { g += '<circle cx="' + X(m.lng) + '" cy="' + Y(m.lat) + '" r="4" fill="' + (hasBg ? '#fff' : 'none') + '" fill-opacity=".5" stroke="' + (hasBg ? '#fff' : '#868e96') + '" stroke-width="1.5"/>'; });
+  if (ref.length) {
+    const idx = Math.max(0, Math.min(ref.length - 1, mine.length + offset)), t = ref[idx];
+    g += '<circle cx="' + X(t.lng) + '" cy="' + Y(t.lat) + '" r="8" fill="none" stroke="#e67700" stroke-width="2.5"/>';
+  }
+  mine.forEach(m => { g += '<circle cx="' + X(m.lng) + '" cy="' + Y(m.lat) + '" r="4.5" fill="' + (m.z === 'out' ? '#c92a2a' : '#2b8a3e') + '" stroke="#fff" stroke-width="1.2"/>'; });
+  let outView = false;
+  if (gps.lat != null) {
+    let px = fx(gps.lng), py = fy(gps.lat);
+    if (px < 8 || px > W - 8 || py < 8 || py > H - 8) { outView = true; px = Math.max(8, Math.min(W - 8, px)); py = Math.max(8, Math.min(H - 8, py)); }
+    const ra = Math.max(6, gps.acc / 111320 * sc);
+    if (!outView) g += '<circle cx="' + px.toFixed(1) + '" cy="' + py.toFixed(1) + '" r="' + ra.toFixed(1) + '" fill="#1c7ed6" fill-opacity=".18" stroke="#1c7ed6" stroke-opacity=".6"/>';
+    const hd = compass != null ? compass : gps.hdg;
+    if (hd != null && !outView) g += '<polygon points="0,-13 5,-3 -5,-3" fill="#1c7ed6" transform="translate(' + px.toFixed(1) + ' ' + py.toFixed(1) + ') rotate(' + hd.toFixed(0) + ')"/>';
+    g += '<circle cx="' + px.toFixed(1) + '" cy="' + py.toFixed(1) + '" r="' + (outView ? 5 : 6) + '" fill="' + (outView ? '#fff' : '#1c7ed6') + '" stroke="#1c7ed6" stroke-width="' + (outView ? 3 : 2) + '"/>';
+  }
+  const mPerPx = 111320 / sc, nice = [5, 10, 20, 50, 100, 200, 500, 1000, 2000].find(v => v / mPerPx >= 40) || 2000, bw = nice / mPerPx;
+  g += '<rect x="6" y="' + (H - 30) + '" width="' + (bw + 14).toFixed(0) + '" height="26" fill="#fff" fill-opacity="' + (hasBg ? '.75' : '0') + '"/><line x1="12" y1="' + (H - 10) + '" x2="' + (12 + bw).toFixed(1) + '" y2="' + (H - 10) + '" stroke="#212529" stroke-width="2"/><text x="12" y="' + (H - 15) + '" font-size="11" fill="#212529">' + (nice >= 1000 ? nice / 1000 + ' km' : nice + ' m') + '</text>';
+  g += '<circle cx="' + (W - 16) + '" cy="24" r="14" fill="#fff" fill-opacity="' + (hasBg ? '.75' : '0') + '"/><text x="' + (W - 16) + '" y="22" font-size="13" font-weight="700" fill="#212529" text-anchor="middle">N</text><polygon points="' + (W - 16) + ',25 ' + (W - 20) + ',33 ' + (W - 12) + ',33" fill="#212529"/>';
+  g += att;
+  svg.querySelector('#mapFg').innerHTML = g;
+  $('mapBg').textContent = 'Fond : ' + (T ? T.n : 'aucun');
+  $('mapNote').textContent = !e ? (polys.length ? 'Parcelle non reconnue : pas de périmètre à afficher.' : 'Aucun périmètre chargé (Réglages) : seuls position et points sont affichés.')
+    : (gps.lat == null ? 'En attente du GPS…' : (distToEntry(e, gps.lat, gps.lng) <= gpsTol() ? '✓ Vous êtes dans la parcelle ' + (cur.p || '') + ' (ou tout près de sa limite)' : '⚠ Vous êtes hors du périmètre de cette parcelle') + (outView ? ' — position hors cadre' : ''))
+    + (T && !navigator.onLine ? ' · fond de carte : réseau nécessaire' : '');
+}
+$('mapBg').onclick = () => { const order = ['ortho', 'plan', 'osm', 'none'], i = order.indexOf(cfg.bg || 'ortho'); cfg.bg = order[(i + 1) % order.length]; save('ntp_cfg', cfg); mapTilesKey = ''; renderMap(); };
+
+/* ============ rapport PDF fabriqué dans l'application (aucune bibliothèque) ============ */
+const PDFMAP = { '—': '\x97', '–': '\x96', '’': '\x92', '‘': '\x91', '…': '\x85', '→': '->', '≈': '~', '✓': '', '⚠': '!', '●': '*', '○': 'o', '↑': '+', '↓': '-' };
+const pdfTxt = s => String(s == null ? '' : s).replace(/[^\x00-\xff]/g, c => PDFMAP[c] != null ? PDFMAP[c] : '?').replace(/[\x85\x91\x92\x96\x97]/g, c => c).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+function pdfBytes(s) { const u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i) & 255; return u; }
+function PdfDoc() {
+  const pages = []; let img = null, curPg = null;
+  const d = { y: 0, W: 595, H: 842 };
+  d.newPage = () => { curPg = []; pages.push(curPg); d.y = 800; };
+  d.text = (x, y, s, size, bold, rgb) => { const c = rgb || [0.13, 0.15, 0.16]; curPg.push('BT /F' + (bold ? 2 : 1) + ' ' + size + ' Tf ' + c.join(' ') + ' rg ' + x.toFixed(1) + ' ' + y.toFixed(1) + ' Td (' + pdfTxt(s) + ') Tj ET'); };
+  d.rect = (x, y, w, h, rgb) => { curPg.push(rgb.join(' ') + ' rg ' + x.toFixed(1) + ' ' + y.toFixed(1) + ' ' + w.toFixed(1) + ' ' + h.toFixed(1) + ' re f'); };
+  d.line = (x1, y1, x2, y2, gray) => { curPg.push((gray == null ? 0.8 : gray) + ' G 0.6 w ' + x1 + ' ' + y1 + ' m ' + x2 + ' ' + y2 + ' l S'); };
+  d.image = (x, y, w, h) => { curPg.push('q ' + w.toFixed(1) + ' 0 0 ' + h.toFixed(1) + ' ' + x.toFixed(1) + ' ' + y.toFixed(1) + ' cm /Im1 Do Q'); };
+  d.setImage = (bytes, w, h) => { img = { bytes, w, h }; };
+  d.ensure = need => { if (d.y - need < 52) d.newPage(); };
+  d.build = () => {
+    const chunks = []; let off = 0; const offs = [];
+    const push = u => { chunks.push(u); off += u.length; };
+    const S = s => pdfBytes(s);
+    const obj = (n, body) => { offs[n] = off; push(S(n + ' 0 obj\n' + body + '\nendobj\n')); };
+    push(S('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n'));
+    const np = pages.length, first = 6;
+    obj(1, '<< /Type /Catalog /Pages 2 0 R >>');
+    obj(2, '<< /Type /Pages /Count ' + np + ' /Kids [' + pages.map((_, i) => (first + 2 * i) + ' 0 R').join(' ') + '] >>');
+    obj(3, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
+    obj(4, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
+    if (img) {
+      offs[5] = off;
+      push(S('5 0 obj\n<< /Type /XObject /Subtype /Image /Width ' + img.w + ' /Height ' + img.h + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + img.bytes.length + ' >>\nstream\n'));
+      push(img.bytes); push(S('\nendstream\nendobj\n'));
+    } else obj(5, '<< /Type /Catalog >>');
+    pages.forEach((ops, i) => {
+      const foot = 'BT /F1 8 Tf 0.5 0.5 0.5 rg 42 26 Td (' + pdfTxt('N-Tester Pro · page ' + (i + 1) + ' / ' + np) + ') Tj ET';
+      const stream = ops.join('\n') + '\n' + foot;
+      obj(first + 2 * i, '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >>' + (img ? ' /XObject << /Im1 5 0 R >>' : '') + ' >> /Contents ' + (first + 2 * i + 1) + ' 0 R >>');
+      obj(first + 2 * i + 1, '<< /Length ' + stream.length + ' >>\nstream\n' + stream + '\nendstream');
+    });
+    const n = first + 2 * np, xr = off;
+    let x = 'xref\n0 ' + n + '\n0000000000 65535 f \n';
+    for (let i = 1; i < n; i++) x += String(offs[i]).padStart(10, '0') + ' 00000 n \n';
+    push(S(x + 'trailer\n<< /Size ' + n + ' /Root 1 0 R >>\nstartxref\n' + xr + '\n%%EOF'));
+    const out = new Uint8Array(off); let p = 0; chunks.forEach(c => { out.set(c, p); p += c.length; });
+    return out;
+  };
+  d.newPage();
+  return d;
+}
+function bytesToB64(u8) { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); }
+
+async function chartJpeg() {
+  try {
+    renderTrend();
+    const svg = $('trendSvg').cloneNode(true);
+    svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg'); svg.setAttribute('width', '720'); svg.setAttribute('height', '480'); svg.removeAttribute('style');
+    svg.insertAdjacentHTML('afterbegin', '<rect width="360" height="240" fill="#ffffff"/>');
+    const img = new Image();
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(svg));
+    await new Promise((ok, ko) => { img.onload = ok; img.onerror = ko; });
+    const c = document.createElement('canvas'); c.width = 1080; c.height = 720;
+    const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, 1080, 720); x.drawImage(img, 0, 0, 1080, 720);
+    const bin = atob(c.toDataURL('image/jpeg', 0.92).split(',')[1]), u = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+    return { bytes: u, w: 1080, h: 720 };
+  } catch (e) { return null; }
+}
+
+async function buildReport() {
+  const p = curP(), n = curN();
+  const s = seriesOf(p, n), st = stats(s.map(m => m.v));
+  if (!st) return null;
+  const pf = profile || {}, GR = [0.106, 0.263, 0.196], GRAY = [0.4, 0.4, 0.4];
+  const date = new Date(s[0].ts).toLocaleDateString('fr-FR');
+  const inside = s.filter(m => m.z === 'in').length, outside = s.filter(m => m.z === 'out').length;
+  const d = PdfDoc(), L = 42;
+  const jpg = await chartJpeg(); if (jpg) d.setImage(jpg.bytes, jpg.w, jpg.h);
+  // en-tête
+  d.rect(0, 786, 595, 56, GR);
+  d.text(L, 808, 'N-Tester Pro — Rapport de mesure', 17, true, [1, 1, 1]);
+  d.y = 766;
+  if (pf.expl) { d.text(L, d.y, pf.expl, 12, true); d.y -= 15; }
+  String(pf.adr || '').split('\n').filter(Boolean).forEach(l => { d.text(L, d.y, l, 10, false, GRAY); d.y -= 12; });
+  d.text(L, d.y, date + ' · opérateur : ' + (pf.nom || session.nom || session.email) + ' (' + session.email + ')', 10, false, GRAY); d.y -= 26;
+  const section = t => { d.ensure(60); d.text(L, d.y, t, 13, true, GR); d.y -= 8; d.line(L, d.y, 553, d.y, 0.6); d.y -= 16; };
+  const row = (a, b, bold) => { d.ensure(20); d.text(L, d.y, a, 10.5, false, GRAY); d.text(250, d.y, b, 10.5, !!bold); d.y -= 17; };
+  section('Parcelle ' + p + ' — échantillon ' + n);
+  row('Pincements', String(st.n), true);
+  row('Moyenne', fmt(st.mean, 1), true);
+  row('Médiane', fmt(st.median, 1), true);
+  if (st.n > 1) {
+    row('Écart-type · variance · CV', fmt(st.sd, 1) + ' · ' + fmt(st.variance, 1) + ' · ' + fmt(st.cv, 1) + ' %');
+    row('Précision obtenue (IC 95 % de la moyenne)', '± ' + fmt(st.halfPct, 1) + ' %   (' + fmt(st.lo, 1) + ' à ' + fmt(st.hi, 1) + ')', true);
+    row('Fiabilité', { ok: 'Fiable', mid: 'Moyenne', bad: 'Faible' }[st.level] + (st.n < REC ? ' (moins de ' + REC + ' pincements : provisoire)' : ''));
+  }
+  if (inside + outside) row('Position des pincements', inside + ' dans le périmètre' + (outside ? ', ' + outside + ' hors périmètre' : ''));
+  d.y -= 8;
+  if (jpg) {
+    const w = 511, h = w * 2 / 3;
+    d.ensure(h + 50); section('Évolution de l\'indice — parcelle ' + p);
+    d.ensure(h + 10); d.image(L, d.y - h, w, h); d.y -= h + 10;
+    d.text(L, d.y, 'Point = moyenne de l\'échantillon ; barre = précision à 95 % de la moyenne.', 8.5, false, GRAY); d.y -= 22;
+  }
+  if (st.n >= 3) {
+    d.ensure(150); section('Précision selon la taille de l\'échantillon');
+    [5, 10, 20, 30, 50].filter(k => k !== st.n).concat([st.n]).sort((a, b) => a - b).forEach(k => row(k + ' pincements' + (k === st.n ? ' (cet échantillon)' : ''), '± ' + fmt(tCrit(k - 1) * st.sd / Math.sqrt(k) / Math.abs(st.mean) * 100, 1) + ' %', k === st.n));
+    d.text(L, d.y, 'Estimation à dispersion constante ; seule la ligne de cet échantillon est mesurée.', 8.5, false, GRAY); d.y -= 22;
+  }
+  const others = otherSeries(p).filter(o => o.s.length);
+  if (others.length) {
+    section('Comparaison avec les échantillons précédents');
+    const cols = [L, 100, 175, 215, 290, 370];
+    const hdr = ['Échantillon', 'Date', 'n', 'Moyenne', 'Écart', 'Test (Welch 95 %)'];
+    d.ensure(24); hdr.forEach((h, i) => d.text(cols[i], d.y, h, 9, true, GRAY)); d.y -= 15;
+    others.forEach(o => {
+      const sst = stats(o.s.map(m => m.v)), w = welch(st, sst), dp = sst.mean ? (st.mean - sst.mean) / Math.abs(sst.mean) * 100 : null;
+      const vals = [String(o.n), dateFr(o.s[o.s.length - 1].ts), String(o.s.length), fmt(sst.mean, 1), dp == null ? '--' : (dp > 0 ? '+' : '') + fmt(dp, 1) + ' %', !w ? 'n trop faible' : (w.sig ? (st.mean > sst.mean ? 'hausse significative' : 'baisse significative') : 'non significatif')];
+      d.ensure(18); vals.forEach((v, i) => d.text(cols[i], d.y, v, 9.5)); d.y -= 14;
+    });
+    d.y -= 10;
+  }
+  section('Mesures individuelles');
+  const mc = [L, 70, 130, 190, 262, 335];
+  const head = () => { ['N°', 'Heure', 'Valeur', 'Latitude', 'Longitude', 'Origine'].forEach((h, i) => d.text(mc[i], d.y, h, 9, true, GRAY)); d.y -= 14; };
+  head();
+  s.forEach((m, i) => {
+    if (d.y < 66) { d.newPage(); head(); }
+    const vals = [String(i + 1), new Date(m.ts).toLocaleTimeString('fr-FR'), fmt(m.v, 1), m.lat == null ? '' : m.lat.toFixed(5), m.lng == null ? '' : m.lng.toFixed(5), String(m.src).indexOf('bt') === 0 ? 'pince' : 'manuel'];
+    vals.forEach((v, j) => d.text(mc[j], d.y, v, 9, j === 2)); d.y -= 12.5;
+  });
+  d.y -= 10; d.ensure(40);
+  d.text(L, d.y, 'Valeurs calculées par N-Tester Pro à partir des mesures de la pince (formule ajustée sur atFarm).', 8.5, false, GRAY); d.y -= 11;
+  d.text(L, d.y, 'Pour l\'interprétation agronomique (dose d\'azote) : atFarm, Yara, ARVALIS.', 8.5, false, GRAY);
+  const bytes = d.build();
+  const name = 'N-Tester_' + p.replace(/[^A-Za-z0-9]/g, '_') + '_P' + n + '_' + new Date(s[0].ts).toISOString().slice(0, 10) + '.pdf';
+  return { subject: 'N-Tester Pro — ' + p + ' échantillon ' + n + ' — ' + date, summary: p + ' échantillon ' + n + ' : ' + st.n + ' pincements, moyenne ' + fmt(st.mean, 1) + ', médiane ' + fmt(st.median, 1) + (st.n > 1 ? ', précision ± ' + fmt(st.halfPct, 1) + ' %' : ''), pdf: bytesToB64(bytes), name: name, bytes: bytes };
+}
+async function downloadPdf() {
+  const r = await buildReport();
+  if (!r) { toast('Aucune mesure.'); return; }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([r.bytes], { type: 'application/pdf' })); a.download = r.name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 8000);
+}
+
+/* ============ v2.1 : écran Pince sans défilement, clavier automatique sans pince, série libre ============ */
+const REC = 20;                                      // nombre de pincements recommandé, jamais imposé
+let kbForce = null;                                  // null = automatique (clavier si la pince n'est pas connectée)
+const pinceUp = () => !!(pince.dev && pince.dev.gatt && pince.dev.gatt.connected);
+const kbShown = () => kbForce !== null ? kbForce : !pinceUp();
+function applyKb() {
+  const k = kbShown();
+  $('kbPane').hidden = !k; $('pinceBig').hidden = k; $('tenCard').hidden = k;
+  $('btnKb').textContent = k ? '⌨ Masquer' : '⌨ Clavier';
+}
+
+function renderParcLine() {
+  const p = cur.p, closedNow = !!closed[skey(curP(), cur.n)];
+  let main, sub;
+  if (p) { main = p + ' · échantillon ' + cur.n; sub = closedNow ? 'échantillon terminé' : (cur.lock ? 'choisie à la main' : (polys.length ? 'détectée par GPS' : '')); }
+  else if (cur.pid) { main = 'Périmètre sans nom — touchez pour le nommer'; sub = ''; }
+  else { main = polys.length ? 'Hors parcelle référencée' : 'Choisir la parcelle'; sub = 'mesures rangées en « ' + NOPARC + ' »'; }
+  $('parcMain').textContent = main; $('parcSub').textContent = sub ? ' · ' + sub : '';
+  $('parcLine').className = 'parcline' + (p ? '' : ' warn');
+  $('btnFinish').textContent = 'Voir les résultats ▸';
+}
+
+function renderSeries() {
+  const vals = seriesOf(curP(), cur.n).map(m => m.v), st = stats(vals);
+  $('serieCount').textContent = vals.length;
+  $('lotBar').style.width = Math.min(100, vals.length / REC * 100) + '%';
+  $('sMean').textContent = st ? fmt(st.mean, 1) : '--';
+  $('sMed').textContent = st ? fmt(st.median, 1) : '--';
+  $('sCi').textContent = (st && st.n >= 2 ? 'Précision ± ' + fmt(st.halfPct, 1) + ' % (95 %)' : 'Précision : --') + ' · ' + (vals.length >= REC ? '✓ ' + REC + ' atteints' : REC + ' recommandés, ' + (REC - vals.length) + ' restants');
+  const dot = $('sDot');
+  if (!st || st.n < 2) { dot.className = 'dot'; dot.textContent = '--'; return; }
+  dot.className = 'dot ' + st.level; dot.textContent = { ok: 'Fiable', mid: 'Moyen', bad: 'Faible' }[st.level];
+}
+
+/* la série se termine quand l'opérateur le décide ; elle se rouvre depuis Résultats */
+function finishSeries() {
+  const p = curP(), n = curN();
+  if (!seriesOf(p, n).length) { toast('Aucune mesure dans cet échantillon.'); return; }
+  if (!closed[skey(p, n)]) { closed[skey(p, n)] = new Date().toISOString(); save('ntp_closed', closed); }
+  renderAll(); showTab('resultats');
+}
+function updateResButtons() { }
+
+function openSheet() {
+  $('parcelle').value = cur.p; $('passage').textContent = cur.n; $('lockChk').checked = !!cur.lock;
+  $('sheet').hidden = false; renderPos(); renderParcInfo(); rebuildGuide();
+}
+function applySheet() {
+  const nm = $('parcelle').value.trim().toUpperCase();
+  const e = gps.lat != null ? detectAt(gps.lat, gps.lng) : null;
+  const pass = Number($('passage').textContent) || 1;
+  if (nm) {
+    if (e && !pnames[e.pid] && (!cur.pid || cur.pid === e.pid)) { pnames[e.pid] = nm; save('ntp_pnames', pnames); renderPolyInfo(); toast('Périmètre nommé « ' + nm + ' » : mémorisé.'); }
+    cur.pid = pidOfName(nm);
+  } else cur.pid = e ? e.pid : null;
+  if (nm !== cur.p) { offset = 0; refN = null; }
+  cur.p = nm; cur.n = pass; cur.lock = $('lockChk').checked;
+  const k = skey(curP(), cur.n);
+  if (closed[k] && confirm('L\'échantillon ' + cur.n + ' de ' + curP() + ' est terminé.\nLe rouvrir pour ajouter des mesures ?')) { delete closed[k]; save('ntp_closed', closed); }
+  persistCur(); closeSheet(); renderAll();
+}
+
+$('btnKb').onclick = () => { kbForce = !kbShown(); applyKb(); };
+$('btnResume').onclick = () => { delete closed[skey(curP(), cur.n)]; save('ntp_closed', closed); renderAll(); showTab('pince'); };
+$('btnNewParc').onclick = () => { cur.lock = false; persistCur(); showTab('pince'); openSheet(); };
+$('btnMap').onclick = () => { mapTilesKey = ''; $('mapSheet').hidden = false; renderMap(); };
+$('btnMapClose').onclick = () => { $('mapSheet').hidden = true; };
+$('mapSheet').addEventListener('click', e => { if (e.target === $('mapSheet')) $('mapSheet').hidden = true; });
+
+buildPad();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+if (session) enterApp(); else $('login').hidden = false;
+</script>
+</body>
+</html>
